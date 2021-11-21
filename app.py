@@ -73,5 +73,17 @@ def login_check(check_driver):
     return ("Pranav" in bodyTag.text) or ("Bala" in bodyTag.text)
 
 
-login(create_driver(False, False), logins[0])
-# //*[@id="navs"]/div/div/div/div/div[4]/a
+# Checks the num of points earned on the present day
+def check_num_pts(check_driver):
+   rewards_btn = check_driver.find_element_by_xpath(r'//*[@id="navs"]/div/div/div/div/div[4]/a')
+   rewards_btn.click()
+   time.sleep(3)
+   check_driver.get("https://rewards.microsoft.com/pointsbreakdown")
+   time.sleep(5000)
+
+def main():
+    driver = create_driver(False, False)
+    login(driver, logins[0])
+    check_num_pts(driver)
+
+main()
