@@ -19,10 +19,59 @@ with open('userpass.txt') as passdoc:
         line = line[:-1]
         if str(line)[-3:] == "com":
             logins.append([line])
-            print(logins)
         else:
             logins[len(logins)-1].append(line)
-            print(logins)
+
+# Takes in the platform and whether or not it will be headless to create a webdriver
+def create_driver(mobile, headless):
+    # Selects the Correct User Agent
+    if mobile:
+        useragent = mobile_useragent
+    else:
+        useragent = desktop_useragent
+
+    # Adds the Correct arguments
+    opts = Options()
+    opts.add_argument(useragent)
+    if headless:
+        opts.add_argument('--headless')
+        opts.add_experimental_option(
+            'excludeSwitches', ['enable-logging'])
+    return webdriver.Chrome(chrome_path, options=opts)
+
+# Logs in the User using the microsoft dialog
+def login(driver_login, acct):
+    logged_in = False  # True when successfully logged in
+
+    user, passwd = acct  # Sets Username and Password values
+
+    while (logged_in == False):
+        print("Attempting Login...")
+        driver_login.get('https://login.live.com/')
+        time.sleep(5)  # Wait for page to load
+
+        driver_login.find_element_by_name('loginfmt').send_keys(user)
+        time.sleep(1)  # Delay Between Send Keys and Click
+        driver_login.find_element_by_xpath(
+            '//*[@id="idSIButton9"]').click()  # next button
+        time.sleep(3)  # Delay for password screen
+        driver_login.find_element_by_name('passwd').send_keys(passwd)
+        time.sleep(1)  # Delay Between Send Keys and Click
+        driver_login.find_element_by_xpath(
+            '//*[@id="idSIButton9"]').click()  # sign in button
+        time.sleep(5)
+
+        logged_in = login_check(driver_login)
+
+    print("Login Successful: ", user)  # Prints Email to the Screen
 
 
+def login_check(check_driver):
+    check_driver.get('https://account.microsoft.com/')
+    time.sleep(3)
+    bodyTag = check_driver.find_element_by_tag_name("body")
+    return ("Pranav" in bodyTag.text) or ("Bala" in bodyTag.text)
 
+
+login(create_driver(False, False), logins[0])
+# //*[@id="navs"]/div/div/div/div/div[4]/a
