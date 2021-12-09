@@ -145,54 +145,37 @@ def check_num_pts(check_driver, lvl2):
     print(points)
     
     def random_searches(driver_search, num):
+        """
+        Random Searches
+        ----------------------
+        Random selection between a coordinate generator and a number generator
+        driver_search -> selenium webdriver
+        num -> number of searches remaining
+        """
+        
         # Generates random coordinates and enters in the search query
+        def coordinate_generator():
+            cardinallr = ['E', 'W']
+            cardinaltd = ['N', 'S']
+            num1 = random.randint(1, 75)
+            num2 = random.randint(1, 75)
 
-    def coordinate_generator():
-        cardinallr = ['E', 'W']
-        cardinaltd = ['N', 'S']
-        num1 = random.randint(1, 75)
-        num2 = random.randint(1, 75)
+            direction1 = random.choice(cardinallr)
+            direction2 = random.choice(cardinaltd)
+            return (f'{num1}° {direction1}, {num2}° {direction2}' +
+                    f" {random.choice(['coord', 'coordinate', 'map', 'zip code'])}")
+        
+        # Creates random equations
+        def numbergen():
+            num1 = random.randint(1, 5001030)
+            num2 = random.randint(1, 500900)
+            return f"{num1}{random.choice(['*', '-', '^'])}{num2}"
 
-        direction1 = random.choice(cardinallr)
-        direction2 = random.choice(cardinaltd)
-        return (f'{num1}° {direction1}, {num2}° {direction2}' +
-                f" {random.choice(['coord', 'coordinate', 'map', 'zip code'])}")
-    # Creates random equations
-
-    def numbergen():
-        num1 = random.randint(1, 5001030)
-        num2 = random.randint(1, 500900)
-        return f"{num1}{random.choice(['*', '-', '^'])}{num2}"
-
-    for i in range(int(num)):
-        stringtosearch = random.choice([coordinate_generator(), numbergen()])
-        driver_search.get(f'https://www.bing.com/search?q={stringtosearch}')
-        print(str(int((i+1)/num*100))+"%")
-        time.sleep(2)
-
-
-def main(accounts):
-    for acct in accounts:
-        driver = create_driver(False, False)  # CHANGE HEADLESS TO TRUE
-        login(driver, acct)
-        pts = check_num_pts(driver)
-        print(pts)
-        # Checks if all the points have been earnerd
-        while not (pts[0] == [True, True, True]):
-            if not pts[0][0]:
-                random_searches(driver, (pts[1][0]))
-            if not pts[0][2]:
-                random_searches(driver, pts[1][2]/5)
-            if not pts[0][1]:
-                driver_mobile = create_driver(
-                    True, False)  # CHANGE HEADLESS TO TRUE
-                login(driver_mobile, acct)
-                random_searches(driver_mobile, (pts[1][1]/5))
-            pts = check_num_pts(driver)
-            if pts[0][1]:
-                driver_mobile.quit()
-        driver.quit()
-    return True
+        for i in range(int(num)):
+            stringtosearch = random.choice([coordinate_generator(), numbergen()])
+            driver_search.get(f'https://www.bing.com/search?q={stringtosearch}')
+            print(str(int((i+1)/num*100))+"%")
+            time.sleep(2)
 
 def main():
     lvl2 = args.level == 'lvl2'
