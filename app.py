@@ -12,10 +12,14 @@ chrome_path = r'/usr/local/bin/chromedriver'
 
 # Vars
 logins = []
+firstName = ''
+lastName = ''
 
 # Argparse Specific - takes input on whether ms rewards is lvl 1 or 2
 parser = argparse.ArgumentParser()
 parser.add_argument("level")
+parser.add_argument("first_name")
+parser.add_argument("last_name")
 args = parser.parse_args()
 
 # You Need a file called userpass.txt with the usernames and passwords on different lines
@@ -76,7 +80,7 @@ def login_check(check_driver):
     check_driver.get('https://account.microsoft.com/')
     time.sleep(3)
     bodyTag = check_driver.find_element_by_tag_name("body")
-    return ("Pranav" in bodyTag.text) or ("Bala" in bodyTag.text)
+    return (firstName in bodyTag.text) or (lastName in bodyTag.text)
 
 
 # Checks the num of points earned on the present day
@@ -142,47 +146,54 @@ def check_num_pts(check_driver, lvl2):
         points.append([pcsearch, edgesearch])
         points.append([int(max_pcsearch), int(max_edgesearch)])
     
-    print(points)
+    return points
     
-    def random_searches(driver_search, num):
-        """
-        Random Searches
-        ----------------------
-        Random selection between a coordinate generator and a number generator
-        driver_search -> selenium webdriver
-        num -> number of searches remaining
-        """
-        
-        # Generates random coordinates and enters in the search query
-        def coordinate_generator():
-            cardinallr = ['E', 'W']
-            cardinaltd = ['N', 'S']
-            num1 = random.randint(1, 75)
-            num2 = random.randint(1, 75)
+def random_searches(driver_search, num):
+    """
+    Random Searches
+    ----------------------
+    Random selection between a coordinate generator and a number generator
+    driver_search -> selenium webdriver
+    num -> number of searches remaining
+    """
+    
+    # Generates random coordinates and enters in the search query
+    def coordinate_generator():
+        cardinallr = ['E', 'W']
+        cardinaltd = ['N', 'S']
+        num1 = random.randint(1, 75)
+        num2 = random.randint(1, 75)
 
-            direction1 = random.choice(cardinallr)
-            direction2 = random.choice(cardinaltd)
-            return (f'{num1}° {direction1}, {num2}° {direction2}' +
-                    f" {random.choice(['coord', 'coordinate', 'map', 'zip code'])}")
-        
-        # Creates random equations
-        def numbergen():
-            num1 = random.randint(1, 5001030)
-            num2 = random.randint(1, 500900)
-            return f"{num1}{random.choice(['*', '-', '^'])}{num2}"
+        direction1 = random.choice(cardinallr)
+        direction2 = random.choice(cardinaltd)
+        return (f'{num1}° {direction1}, {num2}° {direction2}' +
+                f" {random.choice(['coord', 'coordinate', 'map', 'zip code'])}")
+    
+    # Creates random equations
+    def numbergen():
+        num1 = random.randint(1, 5001030)
+        num2 = random.randint(1, 500900)
+        return f"{num1}{random.choice(['*', '-', '^'])}{num2}"
 
-        for i in range(int(num)):
-            stringtosearch = random.choice([coordinate_generator(), numbergen()])
-            driver_search.get(f'https://www.bing.com/search?q={stringtosearch}')
-            print(str(int((i+1)/num*100))+"%")
-            time.sleep(2)
+    for i in range(int(num)):
+        stringtosearch = random.choice([coordinate_generator(), numbergen()])
+        driver_search.get(f'https://www.bing.com/search?q={stringtosearch}')
+        print(str(int((i+1)/num*100))+"%")
+        time.sleep(2)
 
 def main():
     lvl2 = args.level == 'lvl2'
-    for login in range(len(logins)):
+    firstName = args.first_name
+    lastName = args.last_name
+    for i in range(len(logins)):
         driver = create_driver(False, False)
-        login(driver, logins[login])
-        check_num_pts(driver, lvl2)
+        login(driver, logins[i])
+        pts = check_num_pts(driver, lvl2)
+        if not pts[0][0] and not pts[0][1]:
+            random_searches(driver, (pts[1][0]+pts[1][1])/5)
+        if not pts[0][2]:
+            driver = create_driver(False, False)
+            login(driver, logins[i])
         
 
 main()
