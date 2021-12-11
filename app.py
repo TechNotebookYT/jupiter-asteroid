@@ -4,6 +4,7 @@ import random
 import time
 import argparse
 
+# Useragents to spoof browser
 desktop_useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4482.0 Safari/537.36 Edg/92.0.874.0"
 mobile_useragent = "Mozilla/5.0 (Linux; Android 11; SM-N986B) AppleWebKit/537.36 (KHTML, like Gecko) Brave Chrome/88.0.4324.152 Mobile Safari/537.36" # Galaxy Note 20 Ultra
 
@@ -15,9 +16,8 @@ logins = []
 firstName = ''
 lastName = ''
 
-# Argparse Specific - takes input on whether ms rewards is lvl 1 or 2
+# Argparse Specific - takes input on whether account is lvl 1 or 2
 parser = argparse.ArgumentParser()
-parser.add_argument("level")
 parser.add_argument("first_name")
 parser.add_argument("last_name")
 args = parser.parse_args()
@@ -42,7 +42,7 @@ def create_driver(mobile, headless):
 
     # Adds the Correct arguments
     opts = Options()
-    opts.add_argument(useragent)
+    opts.add_argument(f"user-agent={useragent}")
     if headless:
         opts.add_argument('--headless')
         opts.add_experimental_option(
@@ -84,7 +84,7 @@ def login_check(check_driver):
 
 
 # Checks the num of points earned on the present day
-def check_num_pts(check_driver, lvl2):
+def check_num_pts(check_driver):
     pcsearch = False
     mobilesearch = False
     edgesearch = False
@@ -97,53 +97,76 @@ def check_num_pts(check_driver, lvl2):
     check_driver.switch_to.window(check_driver.window_handles[0])
     time.sleep(5)   
     points = []
+    
+    lvl2Field = 'Mobile search' #This is only present if the account is at level 2
+
+    bodyTag = check_driver.find_element_by_tag_name("body") # Returns everything in the body tag
+    
+    # Checks if the account is at level 2 status and sets the lvl2 boolean accordingly
+    if lvl2Field in bodyTag.text:
+        lvl2 = True
+        print("LVL2")
+    else:
+        lvl2 = False
+        print("LVL1")
+
+
     if lvl2:
+        # PC Pts
+        pc_search_pts = check_driver.find_element_by_xpath(
+            '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[1]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]/b').text
         max_pcsearch = check_driver.find_element_by_xpath(
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[1]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]').text
-        print(f'|{max_pcsearch}|')
+        
         max_pcsearch = (max_pcsearch[int(max_pcsearch.index('/'))+2:])
-
-        max_mobilesearch = check_driver.find_element_by_xpath(
-            '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[2]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]').text
-        max_mobilesearch = (max_mobilesearch[int(max_mobilesearch.index('/'))+2:])
-
+        pcsearch = (int(pc_search_pts) == int(max_pcsearch))
+        
+        # Edge Pts
+        edge_search_pts = check_driver.find_element_by_xpath(
+            '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[3]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]/b').text
         max_edgesearch = check_driver.find_element_by_xpath(
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[3]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]').text
+        
         max_edgesearch = (max_edgesearch[int(max_edgesearch.index('/'))+2:])
+        edgesearch = (int(edge_search_pts) == int(max_edgesearch))
 
-        pc_search_pts = check_driver.find_element_by_xpath(
-            '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[1]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]/b')
-        pcsearch = (pc_search_pts.text == max_pcsearch)
-
+        # Mobile Pts
         mobile_search_pts = check_driver.find_element_by_xpath(
-            '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[2]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]/b')
-        mobilesearch = (mobile_search_pts.text == max_mobilesearch)
+            '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[2]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]/b').text
+        max_mobilesearch = check_driver.find_element_by_xpath(
+            '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[2]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]').text
+        
+        max_mobilesearch = (max_mobilesearch[int(max_mobilesearch.index('/'))+2:])
+        mobilesearch = (int(mobile_search_pts) == int(max_mobilesearch))
 
-        edge_search_pts = check_driver.find_element_by_xpath(
-            '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[3]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]/b')
-        edgesearch = (edge_search_pts.text == max_edgesearch)
 
+        # Adds the point data to the list
         points.append([pcsearch, mobilesearch, edgesearch])
+        points.append([int(pc_search_pts), int(mobile_search_pts), int(edge_search_pts)])
         points.append([int(max_pcsearch), int(
             max_mobilesearch), int(max_edgesearch)])
     else:
+        # PC Pts
+        pc_search_pts = check_driver.find_element_by_xpath(
+            '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[1]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]/b').text
         max_pcsearch = check_driver.find_element_by_xpath(
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[1]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]').text
-        max_pcsearch = (max_pcsearch[int(max_pcsearch.index('/'))+2:])
 
+        max_pcsearch = (max_pcsearch[int(max_pcsearch.index('/'))+2:])
+        pcsearch = (pc_search_pts == max_pcsearch)
+
+        # Edge Pts
+        edge_search_pts = check_driver.find_element_by_xpath(
+            '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[3]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]/b').text
         max_edgesearch = check_driver.find_element_by_xpath(
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[3]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]').text
+        
         max_edgesearch = (max_edgesearch[int(max_edgesearch.index('/'))+2:])
+        edgesearch = (edge_search_pts == max_edgesearch)
 
-        pc_search_pts = check_driver.find_element_by_xpath(
-            '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[1]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]/b')
-        pcsearch = (pc_search_pts.text == max_pcsearch)
-
-        edge_search_pts = check_driver.find_element_by_xpath(
-            '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[3]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]/b')
-        edgesearch = (edge_search_pts.text == max_edgesearch)
-
+        # Adds the point data to the list
         points.append([pcsearch, edgesearch])
+        points.append([int(pc_search_pts), int(edge_search_pts)])
         points.append([int(max_pcsearch), int(max_edgesearch)])
     
     return points
@@ -182,18 +205,23 @@ def random_searches(driver_search, num):
         time.sleep(2)
 
 def main():
-    lvl2 = args.level == 'lvl2'
     firstName = args.first_name
     lastName = args.last_name
     for i in range(len(logins)):
         driver = create_driver(False, False)
         login(driver, logins[i])
-        pts = check_num_pts(driver, lvl2)
-        if not pts[0][0] and not pts[0][1]:
-            random_searches(driver, (pts[1][0]+pts[1][1])/5)
-        if not pts[0][2]:
-            driver = create_driver(False, False)
-            login(driver, logins[i])
+        pts = check_num_pts(driver)
+        print(pts)
+        while not ((pts[0][0] or pts[0][1]) or (pts[0][2])):
+            if not pts[0][0] and not pts[0][1]:
+                random_searches(driver, (pts[1][0]+pts[1][1])/5)
+            if not pts[0][2]:
+                driver_mobile = create_driver(True, False)
+                login(driver_mobile, logins[i])
+                random_searches(driver_mobile, (pts[1][0]+pts[1][1])/5)
+                driver_mobile.quit()
+            pts = check_num_pts(driver)
+        driver.quit()
         
 
 main()
