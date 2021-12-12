@@ -4,9 +4,9 @@ import random
 import time
 import argparse
 
-# Useragents to spoof browser
+# Useragents to change browser
 desktop_useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4482.0 Safari/537.36 Edg/92.0.874.0"
-mobile_useragent = "Mozilla/5.0 (Linux; Android 11; SM-N986B) AppleWebKit/537.36 (KHTML, like Gecko) Brave Chrome/88.0.4324.152 Mobile Safari/537.36" # Galaxy Note 20 Ultra
+mobile_useragent = "Mozilla/5.0 (iPod; CPU iPhone OS 14_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/87.0.4280.163 Mobile/15E148 Safari/604.1"
 
 # File path for the chromedriver
 chrome_path = r'/usr/local/bin/chromedriver'
@@ -33,6 +33,8 @@ with open('userpass.txt') as passdoc:
             logins[len(logins)-1].append(line)
 
 # Takes in the platform and whether or not it will be headless to create a webdriver
+
+
 def create_driver(mobile, headless):
     print('Mobile: ', mobile, 'headless: ', headless)
     # Selects the Correct User Agent
@@ -43,15 +45,18 @@ def create_driver(mobile, headless):
 
     # Adds the Correct arguments
     opts = Options()
-    opts.add_argument(f"user-agent={useragent}") # Tells chrome what the user agent is
-    
+    # Tells chrome what the user agent is
+    opts.add_argument(f"user-agent={useragent}")
+
     if headless:
-        opts.add_argument('--headless') # Turns on headless mode
+        opts.add_argument('--headless')  # Turns on headless mode
         opts.add_experimental_option(
-            'excludeSwitches', ['enable-logging']) # Turns off verbose logging
+            'excludeSwitches', ['enable-logging'])  # Turns off verbose logging
     return webdriver.Chrome(chrome_path, options=opts)
 
 # Logs in the User using the microsoft dialog
+
+
 def login(driver_login, acct):
     logged_in = False  # True when successfully logged in
 
@@ -60,18 +65,18 @@ def login(driver_login, acct):
     while not logged_in:
         print("Attempting Login...")
         driver_login.get('https://login.live.com/')
-        time.sleep(5)  # Wait for page to load
+        time.sleep(3)  # Wait for page to load
 
         driver_login.find_element_by_name('loginfmt').send_keys(user)
         time.sleep(1)  # Delay Between Send Keys and Click
         driver_login.find_element_by_xpath(
             '//*[@id="idSIButton9"]').click()  # next button
-        time.sleep(3)  # Delay for password screen
+        time.sleep(2)  # Delay for password screen
         driver_login.find_element_by_name('passwd').send_keys(passwd)
         time.sleep(1)  # Delay Between Send Keys and Click
         driver_login.find_element_by_xpath(
             '//*[@id="idSIButton9"]').click()  # sign in button
-        time.sleep(5)
+        time.sleep(3)
 
         logged_in = login_check(driver_login)
         print("Logged In: ", logged_in)
@@ -82,7 +87,7 @@ def login(driver_login, acct):
 
 def login_check(check_driver):
     check_driver.get('https://account.microsoft.com/')
-    time.sleep(3)
+    time.sleep(2)
     bodyTag = check_driver.find_element_by_tag_name("body")
     return (firstName in bodyTag.text) or (lastName in bodyTag.text)
 
@@ -98,16 +103,17 @@ def check_num_pts(check_driver):
     rewards_btn = check_driver.find_element_by_xpath(
         r'//*[@id="navs"]/div/div/div/div/div[4]/a')
     rewards_btn.click()
-    time.sleep(5)
+    time.sleep(3)
     check_driver.get("https://rewards.microsoft.com/pointsbreakdown")
     check_driver.switch_to.window(check_driver.window_handles[0])
-    time.sleep(5)   
+    time.sleep(3)
     points = []
-    
-    lvl2Field = 'Mobile search' #This is only present if the account is at level 2
 
-    bodyTag = check_driver.find_element_by_tag_name("body") # Returns everything in the body tag
-    
+    lvl2Field = 'Mobile search'  # This is only present if the account is at level 2
+
+    bodyTag = check_driver.find_element_by_tag_name(
+        "body")  # Returns everything in the body tag
+
     # Checks if the account is at level 2 status and sets the lvl2 boolean accordingly
     if lvl2Field in bodyTag.text:
         lvl2 = True
@@ -116,23 +122,22 @@ def check_num_pts(check_driver):
         lvl2 = False
         print("LVL1")
 
-
     if lvl2:
         # PC Pts
         pc_search_pts = check_driver.find_element_by_xpath(
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[1]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]/b').text
         max_pcsearch = check_driver.find_element_by_xpath(
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[1]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]').text
-        
+
         max_pcsearch = (max_pcsearch[int(max_pcsearch.index('/'))+2:])
         pcsearch = (int(pc_search_pts) == int(max_pcsearch))
-        
+
         # Edge Pts
         edge_search_pts = check_driver.find_element_by_xpath(
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[3]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]/b').text
         max_edgesearch = check_driver.find_element_by_xpath(
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[3]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]').text
-        
+
         max_edgesearch = (max_edgesearch[int(max_edgesearch.index('/'))+2:])
         edgesearch = (int(edge_search_pts) == int(max_edgesearch))
 
@@ -141,14 +146,15 @@ def check_num_pts(check_driver):
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[2]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]/b').text
         max_mobilesearch = check_driver.find_element_by_xpath(
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[2]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]').text
-        
-        max_mobilesearch = (max_mobilesearch[int(max_mobilesearch.index('/'))+2:])
-        mobilesearch = (int(mobile_search_pts) == int(max_mobilesearch))
 
+        max_mobilesearch = (
+            max_mobilesearch[int(max_mobilesearch.index('/'))+2:])
+        mobilesearch = (int(mobile_search_pts) == int(max_mobilesearch))
 
         # Adds the point data to the list
         points.append([pcsearch, mobilesearch, edgesearch])
-        points.append([int(pc_search_pts), int(mobile_search_pts), int(edge_search_pts)])
+        points.append([int(pc_search_pts), int(
+            mobile_search_pts), int(edge_search_pts)])
         points.append([int(max_pcsearch), int(
             max_mobilesearch), int(max_edgesearch)])
     else:
@@ -166,7 +172,7 @@ def check_num_pts(check_driver):
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[2]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]/b').text
         max_edgesearch = check_driver.find_element_by_xpath(
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[2]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]').text
-        
+
         max_edgesearch = (max_edgesearch[int(max_edgesearch.index('/'))+2:])
         edgesearch = (edge_search_pts == max_edgesearch)
 
@@ -174,9 +180,10 @@ def check_num_pts(check_driver):
         points.append([pcsearch, edgesearch])
         points.append([int(pc_search_pts), int(edge_search_pts)])
         points.append([int(max_pcsearch), int(max_edgesearch)])
-    
+
     return points
-    
+
+
 def random_searches(driver_search, num):
     """
     Random Searches
@@ -185,7 +192,7 @@ def random_searches(driver_search, num):
     driver_search -> selenium webdriver
     num -> number of searches remaining
     """
-    
+
     # Generates random coordinates and enters in the search query
     def coordinate_generator():
         cardinallr = ['E', 'W']
@@ -197,7 +204,7 @@ def random_searches(driver_search, num):
         direction2 = random.choice(cardinaltd)
         return (f'{num1}° {direction1}, {num2}° {direction2}' +
                 f" {random.choice(['coord', 'coordinate', 'map', 'zip code'])}")
-    
+
     # Creates random equations
     def numbergen():
         num1 = random.randint(1, 5001030)
@@ -210,43 +217,65 @@ def random_searches(driver_search, num):
         print(str(int((i+1)/num*100))+"%")
         time.sleep(2)
 
-# def mobilePts(headless, ptsRemaining, login):
-#     driver_mobile = create_driver(True, False)
-#     login(driver_mobile, login)
-#     random_searches(driver_mobile, (ptsRemaining/5))
-#     driver_mobile.quit()
 
-
+def mobilePts(headless, ptsRemaining, userpass):
+    driver_mobile = create_driver(True, headless)
+    login(driver_mobile, userpass)
+    random_searches(driver_mobile, ptsRemaining)
+    driver_mobile.quit()
 
 
 def main():
     firstName = args.first_name
     lastName = args.last_name
 
-    
     for i in range(len(logins)):
         driver = create_driver(False, False)
         login(driver, logins[i])
         pts = check_num_pts(driver)
         print(pts)
-        
+
         if len(pts[0]) == 3:
-            # while not (pts[0][0] and pts[0][1] and pts[0][2]):
-            while not (pts[0][0] and pts[0][2]):
-                # if not (pts[0][0] and pts[0][2]):
-                random_searches(driver, ((pts[2][0]+pts[2][2]) - (pts[1][0]+pts[1][2]))/5)
-                # if not pts[0][1]:
-                #     mobilePts(False, (pts[2][2] - pts[1][2] + 5), logins[i])
+
+            desktop_tries = 0
+            mobile_tries = 0
+
+            while not (pts[0][0] and pts[0][1] and pts[0][2]):
+                if not (pts[0][0] and pts[0][2]):
+                    random_searches(
+                        driver, ((pts[2][0]+pts[2][2]) - (pts[1][0]+pts[1][2]))/5+1)
+
+                    desktop_tries += 1
+                    if (desktop_tries >= 3):
+                        print("Waiting for 5 Mins...")
+                        time.sleep(300)
+
+                if not pts[0][1]:
+                    mobilePts(False, (pts[2][1] - pts[1][1])/5, logins[i])
+
+                    mobile_tries += 1
+                    if (mobile_tries >= 3):
+                        print("Waiting for 5 Mins...")
+                        time.sleep(300)
+
                 pts = check_num_pts(driver)
                 print(pts)
         else:
+            desktop_tries = 0
+
             while not (pts[0][0] and pts[0][1]):
                 random_searches(
-                    driver, ((pts[2][0]+pts[2][1]) - (pts[1][0]+pts[1][1]))/5)
+                    driver, ((pts[2][0]+pts[2][1]) - (pts[1][0]+pts[1][1]))/5+1)
+
+                desktop_tries += 1
+                if (desktop_tries >= 3):
+                    print("Waiting for 5 Mins...")
+                    time.sleep(300)
+
                 pts = check_num_pts(driver)
                 print(pts)
-        
+
         driver.quit()
-        
+
 
 main()
