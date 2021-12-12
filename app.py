@@ -6,7 +6,10 @@ import argparse
 
 # Useragents to change browser
 desktop_useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4482.0 Safari/537.36 Edg/92.0.874.0"
-mobile_useragent = "Mozilla/5.0 (iPod; CPU iPhone OS 14_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/87.0.4280.163 Mobile/15E148 Safari/604.1"
+mobile_useragents = [
+    "Mozilla/5.0 (iPod; CPU iPhone OS 14_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/87.0.4280.163 Mobile/15E148 Safari/604.1", 
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 13_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.5 Mobile/15E148 Snapchat/10.77.5.59 (like Safari/604.1)",
+]
 
 # File path for the chromedriver
 chrome_path = r'/usr/local/bin/chromedriver'
@@ -16,13 +19,14 @@ logins = []
 firstName = ''
 lastName = ''
 
-# Argparse Specific - takes input on whether account is lvl 1 or 2
+# Argparse Specific - takes input on first and last name for use in logincheck function
 parser = argparse.ArgumentParser()
 parser.add_argument("first_name")
 parser.add_argument("last_name")
 args = parser.parse_args()
 
 # You Need a file called userpass.txt with the usernames and passwords on different lines
+# !!!!!! Make sure you have a newline on the last line of your userpass.txt file
 with open('userpass.txt') as passdoc:
     # Puts each set of logins and passwords in a list [[L1, P1], [L2, P2] ...]
     for line in passdoc:
@@ -32,14 +36,13 @@ with open('userpass.txt') as passdoc:
         else:
             logins[len(logins)-1].append(line)
 
+
 # Takes in the platform and whether or not it will be headless to create a webdriver
-
-
 def create_driver(mobile, headless):
     # print('Mobile: ', mobile, 'headless: ', headless) ## Debug Code
     # Selects the Correct User Agent
     if mobile:
-        useragent = mobile_useragent
+        useragent = random.choice(mobile_useragents) # Picks from 2 different useragents
     else:
         useragent = desktop_useragent
 
@@ -52,15 +55,14 @@ def create_driver(mobile, headless):
         opts.add_argument('--headless')  # Turns on headless mode
         opts.add_experimental_option(
             'excludeSwitches', ['enable-logging'])  # Turns off verbose logging
-    return webdriver.Chrome(chrome_path, options=opts)
+    return webdriver.Chrome(chrome_path, options=opts) # Creates webdriver with options and returns it
+
 
 # Logs in the User using the microsoft dialog
-
-
 def login(driver_login, acct):
     logged_in = False  # True when successfully logged in
 
-    user, passwd = acct  # Sets Username and Password values
+    user, passwd = acct  # Sets Username and Password values from acct list
 
     while not logged_in:
         print("Attempting Login...")
@@ -88,15 +90,15 @@ def login(driver_login, acct):
 def login_check(check_driver):
     check_driver.get('https://account.microsoft.com/')
     time.sleep(2)
-    bodyTag = check_driver.find_element_by_tag_name("body")
-    return (firstName in bodyTag.text) or (lastName in bodyTag.text)
+    bodyTag = check_driver.find_element_by_tag_name("body") # All of the text on the webpage
+    return (firstName in bodyTag.text) or (lastName in bodyTag.text) # Checks if name is on the webpage
 
 
 # Checks the num of points earned on the present day
 def check_num_pts(check_driver):
-    pcsearch = False
-    mobilesearch = False
-    edgesearch = False
+    pcsearch_complete = False
+    mobilesearch_complete = False
+    edgesearch_complete = False
 
     check_driver.get('https://account.microsoft.com/')
     time.sleep(3)
@@ -105,7 +107,7 @@ def check_num_pts(check_driver):
     rewards_btn.click()
     time.sleep(3)
     check_driver.get("https://rewards.microsoft.com/pointsbreakdown")
-    check_driver.switch_to.window(check_driver.window_handles[0])
+    check_driver.switch_to.window(check_driver.window_handles[0]) # Switches to first tab
     time.sleep(3)
     points = []
 
@@ -130,7 +132,7 @@ def check_num_pts(check_driver):
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[1]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]').text
 
         max_pcsearch = (max_pcsearch[int(max_pcsearch.index('/'))+2:])
-        pcsearch = (int(pc_search_pts) == int(max_pcsearch))
+        pcsearch_complete = (int(pc_search_pts) == int(max_pcsearch))
 
         # Edge Pts
         edge_search_pts = check_driver.find_element_by_xpath(
@@ -139,7 +141,7 @@ def check_num_pts(check_driver):
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[3]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]').text
 
         max_edgesearch = (max_edgesearch[int(max_edgesearch.index('/'))+2:])
-        edgesearch = (int(edge_search_pts) == int(max_edgesearch))
+        edgesearch_complete = (int(edge_search_pts) == int(max_edgesearch))
 
         # Mobile Pts
         mobile_search_pts = check_driver.find_element_by_xpath(
@@ -149,10 +151,10 @@ def check_num_pts(check_driver):
 
         max_mobilesearch = (
             max_mobilesearch[int(max_mobilesearch.index('/'))+2:])
-        mobilesearch = (int(mobile_search_pts) == int(max_mobilesearch))
+        mobilesearch_complete = (int(mobile_search_pts) == int(max_mobilesearch))
 
         # Adds the point data to the list
-        points.append([pcsearch, mobilesearch, edgesearch])
+        points.append([pcsearch_complete, mobilesearch_complete, edgesearch_complete])
         points.append([int(pc_search_pts), int(
             mobile_search_pts), int(edge_search_pts)])
         points.append([int(max_pcsearch), int(
@@ -165,7 +167,7 @@ def check_num_pts(check_driver):
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[1]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]').text
 
         max_pcsearch = (max_pcsearch[int(max_pcsearch.index('/'))+2:])
-        pcsearch = (pc_search_pts == max_pcsearch)
+        pcsearch_complete = (pc_search_pts == max_pcsearch)
 
         # Edge Pts
         edge_search_pts = check_driver.find_element_by_xpath(
@@ -174,10 +176,10 @@ def check_num_pts(check_driver):
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[2]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]').text
 
         max_edgesearch = (max_edgesearch[int(max_edgesearch.index('/'))+2:])
-        edgesearch = (edge_search_pts == max_edgesearch)
+        edgesearch_complete = (edge_search_pts == max_edgesearch)
 
         # Adds the point data to the list
-        points.append([pcsearch, edgesearch])
+        points.append([pcsearch_complete, edgesearch_complete])
         points.append([int(pc_search_pts), int(edge_search_pts)])
         points.append([int(max_pcsearch), int(max_edgesearch)])
 
@@ -215,7 +217,7 @@ def random_searches(driver_search, num):
         stringtosearch = random.choice([coordinate_generator(), numbergen()])
         driver_search.get(f'https://www.bing.com/search?q={stringtosearch}')
         print(str(int((i+1)/num*100))+"%")
-        time.sleep(2)
+        time.sleep(random.randint(1, 4))
 
 
 def mobilePts(headless, ptsRemaining, userpass):
@@ -229,8 +231,7 @@ def main():
     firstName = args.first_name
     lastName = args.last_name
 
-    # firstName = 'Pranav'
-    # lastName = 'Bala'
+    
 
     for i in range(len(logins)):
         driver = create_driver(False, False)
