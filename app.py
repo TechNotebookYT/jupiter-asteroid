@@ -36,7 +36,7 @@ with open('userpass.txt') as passdoc:
 
 
 def create_driver(mobile, headless):
-    print('Mobile: ', mobile, 'headless: ', headless)
+    # print('Mobile: ', mobile, 'headless: ', headless) ## Debug Code
     # Selects the Correct User Agent
     if mobile:
         useragent = mobile_useragent
@@ -80,8 +80,8 @@ def login(driver_login, acct):
 
         logged_in = login_check(driver_login)
         print("Logged In: ", logged_in)
-        print("User: ", user)
-        print("Pass: ", passwd)
+        # print("User: ", user) ## Debug Code
+        # print("Pass: ", passwd) ## Debug Code
     print("Login Successful: ", user)  # Prints Email to the Screen
 
 
@@ -117,10 +117,10 @@ def check_num_pts(check_driver):
     # Checks if the account is at level 2 status and sets the lvl2 boolean accordingly
     if lvl2Field in bodyTag.text:
         lvl2 = True
-        print("LVL2")
+        # print("LVL2") ## Debug Code
     else:
         lvl2 = False
-        print("LVL1")
+        # print("LVL1") ## Debug Code
 
     if lvl2:
         # PC Pts
@@ -228,6 +228,9 @@ def mobilePts(headless, ptsRemaining, userpass):
 def main():
     firstName = args.first_name
     lastName = args.last_name
+
+    # firstName = 'Pranav'
+    # lastName = 'Bala'
 
     for i in range(len(logins)):
         driver = create_driver(False, False)
