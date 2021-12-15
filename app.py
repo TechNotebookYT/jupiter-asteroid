@@ -3,12 +3,12 @@ from selenium.webdriver.chrome.options import Options
 import random
 import time
 import argparse
+import os
 
 # Useragents to change browser
 desktop_useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4482.0 Safari/537.36 Edg/92.0.874.0"
 mobile_useragents = [
-    "Mozilla/5.0 (iPod; CPU iPhone OS 14_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/87.0.4280.163 Mobile/15E148 Safari/604.1", 
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 13_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.5 Mobile/15E148 Snapchat/10.77.5.59 (like Safari/604.1)",
+    "Mozilla/5.0 (Linux; Android 10; SM-G975U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.93 Mobile Safari/537.36",
 ]
 
 # File path for the chromedriver
@@ -18,6 +18,7 @@ chrome_path = r'/usr/local/bin/chromedriver'
 logins = []
 firstName = ''
 lastName = ''
+current_path = os.getcwd()
 
 # Argparse Specific - takes input on first and last name for use in logincheck function
 parser = argparse.ArgumentParser()
@@ -27,7 +28,7 @@ args = parser.parse_args()
 
 # You Need a file called userpass.txt with the usernames and passwords on different lines
 # !!!!!! Make sure you have a newline on the last line of your userpass.txt file
-with open('userpass.txt') as passdoc:
+with open(f'{current_path}/userpass.txt') as passdoc:
     # Puts each set of logins and passwords in a list [[L1, P1], [L2, P2] ...]
     for line in passdoc:
         line = line[:-1]
@@ -209,8 +210,8 @@ def random_searches(driver_search, num):
 
     # Creates random equations
     def numbergen():
-        num1 = random.randint(1, 5001030)
-        num2 = random.randint(1, 500900)
+        num1 = random.randint(1, 99999)
+        num2 = random.randint(1, 9999)
         return f"{num1}{random.choice(['*', '-', '^'])}{num2}"
 
     for i in range(int(num)):
@@ -221,63 +222,63 @@ def random_searches(driver_search, num):
 
 
 def mobilePts(headless, ptsRemaining, userpass):
-    driver_mobile = create_driver(True, headless)
-    login(driver_mobile, userpass)
-    random_searches(driver_mobile, ptsRemaining)
-    driver_mobile.quit()
+    driver_mobile = create_driver(True, headless) # Creates mobile driver
+    login(driver_mobile, userpass) # Logs in on mobile driver
+    random_searches(driver_mobile, ptsRemaining) # Starts random searches
+    driver_mobile.quit() # Closes the mobile driver
 
 
 def main():
+    # Imports first and last name from argparse
     firstName = args.first_name
     lastName = args.last_name
 
-    
+    # firstName = 'Pranav'
+    # lastName = 'Bala'
 
     for i in range(len(logins)):
-        driver = create_driver(False, False)
-        login(driver, logins[i])
-        pts = check_num_pts(driver)
-        print(pts)
+        driver = create_driver(False, True) # Creates the desktop driver
+        login(driver, logins[i]) # Logs in on desktop driver
+        pts = check_num_pts(driver) # Checks the number of points and adds it to pts list
+        print(pts) # Prints out the pts list
 
         if len(pts[0]) == 3:
-
-            desktop_tries = 0
-            mobile_tries = 0
-
+            tries = 0
             while not (pts[0][0] and pts[0][1] and pts[0][2]):
                 if not (pts[0][0] and pts[0][2]):
                     random_searches(
                         driver, ((pts[2][0]+pts[2][2]) - (pts[1][0]+pts[1][2]))/5+1)
 
-                    desktop_tries += 1
-                    if (desktop_tries >= 3):
-                        print("Waiting for 5 Mins...")
-                        time.sleep(300)
-
                 if not pts[0][1]:
-                    mobilePts(False, (pts[2][1] - pts[1][1])/5, logins[i])
-
-                    mobile_tries += 1
-                    if (mobile_tries >= 3):
-                        print("Waiting for 5 Mins...")
-                        time.sleep(300)
-
+                    mobilePts(True, (pts[2][1] - pts[1][1])/5, logins[i])
+                
                 pts = check_num_pts(driver)
                 print(pts)
-        else:
-            desktop_tries = 0
 
+                tries += 1
+                if tries >= 5:
+                    print("Try limit reached... Proceeding to next account")
+                    break
+                elif tries >= 3:
+                    print("Waiting 5 Mins...")
+                    time.sleep(300) 
+
+        else:
+            tries = 0
             while not (pts[0][0] and pts[0][1]):
                 random_searches(
                     driver, ((pts[2][0]+pts[2][1]) - (pts[1][0]+pts[1][1]))/5+1)
 
-                desktop_tries += 1
-                if (desktop_tries >= 3):
-                    print("Waiting for 5 Mins...")
-                    time.sleep(300)
-
                 pts = check_num_pts(driver)
                 print(pts)
+                
+                tries += 1
+                if tries >= 5:
+                    print("Try limit reached... Proceeding to next account")
+                    break
+                elif tries >= 3:
+                    print("Waiting 5 Mins...")
+                    time.sleep(300)
 
         driver.quit()
 
