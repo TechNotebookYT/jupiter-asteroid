@@ -233,8 +233,7 @@ def main():
     firstName = args.first_name
     lastName = args.last_name
 
-    # firstName = 'Pranav'
-    # lastName = 'Bala'
+    
 
     for i in range(len(logins)):
         driver = create_driver(False, True) # Creates the desktop driver
