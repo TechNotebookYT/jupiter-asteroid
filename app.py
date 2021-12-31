@@ -1,9 +1,13 @@
+# USE THIS FOR PTS: https://www.bing.com/rewardsapp/bepflyoutpage?style=chromeextension
+# https://github.com/blackluv/Microsoft-Rewards-Bot/blob/master/ms_rewards.py
+# ^ Implement line #670
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import random
 import time
 import argparse
 import os
+from random_word import RandomWords
 
 # Useragents to change browser
 desktop_useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4482.0 Safari/537.36 Edg/92.0.874.0"
@@ -124,7 +128,7 @@ def check_num_pts(check_driver):
     else:
         lvl2 = False
         # print("LVL1") ## Debug Code
-
+    
     if lvl2:
         # PC Pts
         pc_search_pts = check_driver.find_element_by_xpath(
@@ -186,6 +190,26 @@ def check_num_pts(check_driver):
 
     return points
 
+def updated_check_num_pts(check_driver):
+    points = []
+
+    check_driver.get(
+        "https://www.bing.com/rewardsapp/bepflyoutpage?style=chromeextension")
+
+    # Gets number of points remaining for each category
+    pc_search_pts_remaining = check_driver.find_element_by_xpath(
+        '//*[@id="modern-flyout"]/div/div[5]/div/div/div[1]/div/div/text()').text
+    pc_search_pts_remaining = int(pc_search_pts_remaining[4:]) - int(pc_search_pts_remaining[:3])
+
+    edge_search_pts_remaining = check_driver.find_element_by_xpath(
+        '//*[@id="modern-flyout"]/div/div[5]/div/div/div[2]/div/div/text()').text
+    edge_search_pts_remaining = int(edge_search_pts_remaining[4:]) - int(edge_search_pts_remaining[:3])
+
+    mobile_search_pts_remaining = check_driver.find_element_by_xpath(
+        '//*[@id="modern-flyout"]/div/div[5]/div/div/div[3]/div/div/text()').text
+    mobile_search_pts_remaining = int(mobile_search_pts_remaining[4:]) - int(mobile_search_pts_remaining[:3])
+
+    points.append(pc_search_pts_remaining, mobile_search_pts_remaining, edge_search_pts_remaining)
 
 def random_searches(driver_search, num):
     """
@@ -214,8 +238,13 @@ def random_searches(driver_search, num):
         num2 = random.randint(1, 9999)
         return f"{num1}{random.choice(['*', '-', '^'])}{num2}"
 
+    r = RandomWords().get_random_words() # Random word list
+    def randomWordDefinition():
+        # Example search: exemptions define5
+        return(random.choice(r) + random.choice([" def", " define", " definition"] + random.randint(0, 9)))
+
     for i in range(int(num)):
-        stringtosearch = random.choice([coordinate_generator(), numbergen()])
+        stringtosearch = random.choice([coordinate_generator(), numbergen(), randomWordDefinition()])
         driver_search.get(f'https://www.bing.com/search?q={stringtosearch}')
         print(str(int((i+1)/num*100))+"%")
         time.sleep(random.randint(1, 4))
@@ -233,10 +262,11 @@ def main():
     firstName = args.first_name
     lastName = args.last_name
 
-    
+    # firstName = 'Pranav'
+    # lastName = 'Bala'
 
     for i in range(len(logins)):
-        driver = create_driver(False, True) # Creates the desktop driver
+        driver = create_driver(False, False) # Creates the desktop driver
         login(driver, logins[i]) # Logs in on desktop driver
         pts = check_num_pts(driver) # Checks the number of points and adds it to pts list
         print(pts) # Prints out the pts list
@@ -249,7 +279,7 @@ def main():
                         driver, ((pts[2][0]+pts[2][2]) - (pts[1][0]+pts[1][2]))/5+1)
 
                 if not pts[0][1]:
-                    mobilePts(True, (pts[2][1] - pts[1][1])/5, logins[i])
+                    mobilePts(False, (pts[2][1] - pts[1][1])/5, logins[i])
                 
                 pts = check_num_pts(driver)
                 print(pts)
