@@ -93,10 +93,31 @@ def login(driver_login, acct):
 
 
 def login_check(check_driver):
+    msft_acct_check = False # This is the check for the microsoft account page
+    bg_acct_check = False # This is the check for the bing account page
+
+    # Checks if name is on the webpage
     check_driver.get('https://account.microsoft.com/')
     time.sleep(2)
-    bodyTag = check_driver.find_element_by_tag_name("body") # All of the text on the webpage
-    return (firstName in bodyTag.text) or (lastName in bodyTag.text) # Checks if name is on the webpage
+    account_body = check_driver.find_element_by_tag_name("body").text # All of the text on the webpage
+    
+    check_driver.get('https://www.bing.com/search?q=when+is+the+sunset')
+    search_engine_fullpage = check_driver.page_source.encode('utf-8')
+
+    if (((firstName in account_body) or (lastName in account_body))):
+        msft_acct_check = True
+    
+    signin_tries = 0
+    while(bg_acct_check==False and signin_tries <= 3):
+        if ((firstName in str(search_engine_fullpage)) or (lastName in str(search_engine_fullpage))):
+            bg_acct_check = True
+        else:
+            signin_tries += 1
+            check_driver.find_element_by_xpath('//*[@id="id_a"]').click()
+            time.sleep(1)
+            search_engine_fullpage = check_driver.page_source.encode('utf-8')
+
+    return bg_acct_check and msft_acct_check
 
 
 # Checks the num of points earned on the present day
