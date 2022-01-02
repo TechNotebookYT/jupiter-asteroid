@@ -25,6 +25,14 @@ firstName = ''
 lastName = ''
 current_path = os.path.dirname(os.path.realpath(__file__))
 
+# Imports element data from json file
+with open('elements.json') as jfile:
+    element_data = json.load(jfile)
+
+# Imports url data from json file
+with open('urls.json') as jfile:
+    url_data = json.load(jfile)
+
 # Argparse Specific - takes input on first and last name for use in logincheck function
 parser = argparse.ArgumentParser()
 parser.add_argument("first_name")
@@ -60,17 +68,17 @@ def create_driver(mobile, headless):
     else:
         useragent = desktop_useragent
 
-    # Adds the Correct arguments
-    opts = Options()
-    # Tells chrome what the user agent is
-    opts.add_argument(f"user-agent={useragent}")
+        # Adds the Correct arguments
+        opts = Options()
+        # Tells chrome what the user agent is
+        opts.add_argument(f"user-agent={useragent}")
 
-    if headless:
-        opts.add_argument('--headless')  # Turns on headless mode
-        opts.add_experimental_option(
-            'excludeSwitches', ['enable-logging'])  # Turns off verbose logging
-    # Creates webdriver with options and returns it
-    return webdriver.Chrome(chrome_path, options=opts)
+        if headless:
+            opts.add_argument('--headless')  # Turns on headless mode
+            opts.add_experimental_option(
+                'excludeSwitches', ['enable-logging'])  # Turns off verbose logging
+        # Creates webdriver with options and returns it
+        return webdriver.Chrome(chrome_path, options=opts)
 
 
 # Logs in the User using the microsoft dialog
@@ -119,6 +127,7 @@ def login_check(check_driver):
         msft_acct_check = True
 
     signin_tries = 0
+    
     while(bg_acct_check == False and signin_tries <= 3):
         if ((firstName in str(search_engine_fullpage)) or (lastName in str(search_engine_fullpage))):
             bg_acct_check = True
@@ -230,12 +239,20 @@ def updated_check_num_pts(check_driver):
     points = []
 
     check_driver.get(url_data["points_url"])
+<<<<<<< HEAD
 
     time.sleep(3)  # Wait for the page to load
 
     rewards_fullpage = str(check_driver.page_source.encode('utf-8'))
     rewards_body = check_driver.find_element_by_tag_name(
         "body").text  # All of the text on the webpage
+=======
+    
+    time.sleep(3) # Wait for the page to load
+
+    rewards_fullpage = str(check_driver.page_source.encode('utf-8'))
+    rewards_body = check_driver.find_element_by_tag_name("body").text  # All of the text on the webpage
+>>>>>>> ac890a4d5423dccc9676a027190e7f230643078c
 
     # In some instances, a join now button is displayed, it needs to be clicked
     if ("When you join Microsoft Rewards" in rewards_body):
@@ -300,7 +317,11 @@ def random_searches(driver_search, num):
 
     def randomWordDefinition():
         # Example search: exemptions define5
-        return(str(random.choice(r)) + random.choice([" def", " define", " definition"] + int(random.randint(0, 9))))
+        random_word_search = str(random.choice(r))
+        random_word_search += random.choice([" def", " define", " definition"])
+        random_word_search += str(random.randint(0, 9))
+
+        return random_word_search
 
     for i in range(int(num)):
         stringtosearch = random.choice(
@@ -329,7 +350,7 @@ def main():
         driver = create_driver(False, False)  # Creates the desktop driver
         login(driver, logins[i])  # Logs in on desktop driver
         # Checks the number of points and adds it to pts list
-        pts = check_num_pts(driver)
+        pts = updated_check_num_pts(driver)
         print(pts)  # Prints out the pts list
 
         if len(pts[0]) == 3:
@@ -342,35 +363,150 @@ def main():
                 if not pts[0][1]:
                     mobilePts(False, (pts[2][1] - pts[1][1])/5, logins[i])
 
-                pts = check_num_pts(driver)
+                pts = updated_check_num_pts(driver)
                 print(pts)
 
-                tries += 1
-                if tries >= 5:
-                    print("Try limit reached... Proceeding to next account")
-                    break
-                elif tries >= 3:
-                    print("Waiting 5 Mins...")
-                    time.sleep(300)
+            max_edgesearch = (max_edgesearch[int(max_edgesearch.index('/'))+2:])
+            edgesearch_complete = (edge_search_pts == max_edgesearch)
 
-        else:
-            tries = 0
-            while not (pts[0][0] and pts[0][1]):
-                random_searches(
-                    driver, ((pts[2][0]+pts[2][1]) - (pts[1][0]+pts[1][1]))/5+1)
+            # Adds the point data to the list
+            points.append([pcsearch_complete, edgesearch_complete])
+            points.append([int(pc_search_pts), int(edge_search_pts)])
+            points.append([int(max_pcsearch), int(max_edgesearch)])
 
-                pts = check_num_pts(driver)
+        return points
+
+
+    def updated_check_num_pts(check_driver):
+        points = []
+
+        check_driver.get(
+            "https://www.bing.com/rewardsapp/bepflyoutpage?style=chromeextension")
+
+        rewards_fullpage = check_driver.page_source.encode('utf-8')
+        if ("")
+
+        # Gets number of points remaining for each category
+        pc_search_pts_remaining = check_driver.find_element_by_xpath(
+            '//*[@id="modern-flyout"]/div/div[5]/div/div/div[1]/div/div/text()').text
+        pc_search_pts_remaining = int(
+            pc_search_pts_remaining[4:]) - int(pc_search_pts_remaining[:3])
+
+        edge_search_pts_remaining = check_driver.find_element_by_xpath(
+            '//*[@id="modern-flyout"]/div/div[5]/div/div/div[2]/div/div/text()').text
+        edge_search_pts_remaining = int(
+            edge_search_pts_remaining[4:]) - int(edge_search_pts_remaining[:3])
+
+        mobile_search_pts_remaining = check_driver.find_element_by_xpath(
+            '//*[@id="modern-flyout"]/div/div[5]/div/div/div[3]/div/div/text()').text
+        mobile_search_pts_remaining = int(
+            mobile_search_pts_remaining[4:]) - int(mobile_search_pts_remaining[:3])
+
+        points.append(pc_search_pts_remaining,
+                    mobile_search_pts_remaining, edge_search_pts_remaining)
+
+
+    def random_searches(driver_search, num):
+        """
+        Random Searches
+        ----------------------
+        Random selection between a coordinate generator and a number generator
+        driver_search -> selenium webdriver
+        num -> number of searches remaining
+        """
+
+        # Generates random coordinates and enters in the search query
+        def coordinate_generator():
+            cardinallr = ['E', 'W']
+            cardinaltd = ['N', 'S']
+            num1 = random.randint(1, 75)
+            num2 = random.randint(1, 75)
+
+            direction1 = random.choice(cardinallr)
+            direction2 = random.choice(cardinaltd)
+            return (f'{num1}° {direction1}, {num2}° {direction2}' +
+                    f" {random.choice(['coord', 'coordinate', 'map', 'zip code'])}")
+
+        # Creates random equations
+        def numbergen():
+            num1 = random.randint(1, 99999)
+            num2 = random.randint(1, 9999)
+            return f"{num1}{random.choice(['*', '-', '^'])}{num2}"
+
+        r = RandomWords().get_random_words()  # Random word list
+
+        def randomWordDefinition():
+            # Example search: exemptions define5
+            random_word_search = str(random.choice(r))
+            random_word_search += random.choice([" def", " define", " definition"])
+            random_word_search += str(random.randint(0, 9))
+
+            return random_word_search
+
+        for i in range(int(num)):
+            stringtosearch = random.choice(
+                [coordinate_generator(), numbergen(), randomWordDefinition()])
+            driver_search.get(f'https://www.bing.com/search?q={stringtosearch}')
+            print(str(int((i+1)/num*100))+"%")
+            time.sleep(random.randint(1, 4))
+
+
+    def mobilePts(headless, ptsRemaining, userpass):
+        driver_mobile = create_driver(True, headless)  # Creates mobile driver
+        login(driver_mobile, userpass)  # Logs in on mobile driver
+        random_searches(driver_mobile, ptsRemaining)  # Starts random searches
+        driver_mobile.quit()  # Closes the mobile driver
+
+
+    def main():
+        # Imports first and last name from argparse
+        firstName = args.first_name
+        lastName = args.last_name
+
+        # firstName = 'Pranav'
+        # lastName = 'Bala'
+
+        for i in range(len(logins)):
+            driver = create_driver(False, False)  # Creates the desktop driver
+            login(driver, logins[i])  # Logs in on desktop driver
+            # Checks the number of points and adds it to pts list
+            pts = updated_check_num_pts(driver)
+            print(pts)  # Prints out the pts list
+
+            if len(pts[0]) == 3:
+                tries = 0
+                while not (pts[0][0] and pts[0][1] and pts[0][2]):
+                    if not (pts[0][0] and pts[0][2]):
+                        random_searches(
+                            driver, ((pts[2][0]+pts[2][2]) - (pts[1][0]+pts[1][2]))/5+1)
+
+                    if not pts[0][1]:
+                        mobilePts(False, (pts[2][1] - pts[1][1])/5, logins[i])
+
+                    pts = updated_check_num_pts(driver)
+                    print(pts)
+
+                    tries += 1
+                    if tries >= 5:
+                        print("Try limit reached... Proceeding to next account")
+                        break
+                    elif tries >= 3:
+                        print("Waiting 5 Mins...")
+                        time.sleep(300)
+
+            else:
+                tries = 0
+                while not (pts[0][0] and pts[0][1]):
+                    random_searches(
+                        driver, ((pts[2][0]+pts[2][1]) - (pts[1][0]+pts[1][1]))/5+1)
+
+                    pts = updated_check_num_pts(driver)
+                    print(pts)
+
+                pts = updated_check_num_pts(driver)
                 print(pts)
 
-                tries += 1
-                if tries >= 5:
-                    print("Try limit reached... Proceeding to next account")
-                    break
-                elif tries >= 3:
-                    print("Waiting 5 Mins...")
-                    time.sleep(300)
-
-        driver.quit()
+            driver.quit()
 
 
 main()
