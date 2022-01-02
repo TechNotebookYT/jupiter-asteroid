@@ -1,4 +1,8 @@
 {
+<<<<<<< HEAD
     "join_now_btn_xpath": "//*[@id=\"modern-flyout\"]/div/div/div/div[2]/a"
+=======
+    "join_now_btn": "<a href=\"/fd/auth/signin?action=interactive&amp;provider=windows_live_id&amp;src=SoUp_RWNU&amp;perms=&amp;sig=00B1368BCF396FD932292794CEDF6E7D&amp;return_url=https%3a%2f%2fwww.bing.com%2fmsrewards%2fapi%2fv1%2fenroll%3fpubl%3dBINGIP%26crea%3dMY00IA%26pn%3dBINGTRIAL5TO250P201808%26partnerId%3dBingRewards%26pred%3dtrue%26sessionId%3d00B1368BCF396FD932292794CEDF6E7D&amp;Token=1&amp;lw=1&amp;swt=1&amp;noaadredir=1&amp;cobrandid=03c8bbb5-2dff-4721-8261-a4ccff24c81a\" title=\"Join now\" target=\"_top\" class=\"bt_text\" h=\"ID=RewardsFlyout,2.1\" data-logged=\"1\">Join now</a>"
+>>>>>>> 503fb9b14a37774fba2fe4f8d2f6ba10125b5dcd
     
 }
