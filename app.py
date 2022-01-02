@@ -1,6 +1,7 @@
 # USE THIS FOR PTS: https://www.bing.com/rewardsapp/bepflyoutpage?style=chromeextension
 # https://github.com/blackluv/Microsoft-Rewards-Bot/blob/master/ms_rewards.py
 # ^ Implement line #670
+# TODO - Add comments/add more to json
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import random
