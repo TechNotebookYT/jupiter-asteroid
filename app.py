@@ -8,6 +8,8 @@ import time
 import argparse
 import os
 from random_word import RandomWords
+import json
+
 
 # Useragents to change browser
 desktop_useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4482.0 Safari/537.36 Edg/92.0.874.0"
@@ -23,6 +25,14 @@ logins = []
 firstName = ''
 lastName = ''
 current_path = os.path.dirname(os.path.realpath(__file__))
+
+# Imports element data from json file
+with open('elements.json') as jfile:
+    element_data = json.load(jfile)
+
+# Imports url data from json file
+with open('urls.json') as jfile:
+    url_data = json.load(jfile)
 
 # Argparse Specific - takes input on first and last name for use in logincheck function
 parser = argparse.ArgumentParser()
@@ -221,27 +231,43 @@ def check_num_pts(check_driver):
 def updated_check_num_pts(check_driver):
     points = []
 
-    check_driver.get(
-        "https://www.bing.com/rewardsapp/bepflyoutpage?style=chromeextension")
+    check_driver.get(url_data["points_url"])
+    
+    time.sleep(3) # Wait for the page to load
+
+    rewards_fullpage = str(check_driver.page_source.encode('utf-8'))
+    rewards_body = check_driver.find_element_by_tag_name("body").text  # All of the text on the webpage
+
+    # In some instances, a join now button is displayed, it needs to be clicked
+    if ("When you join Microsoft Rewards" in rewards_body):
+        print("join btn detected")
+        check_driver.find_element_by_xpath(
+            element_data['join_now_btn_xpath']).click()
+        # ↓ Done since the join now button takes you to bing.com and not to points pg
+        check_driver.get(url_data["points_url"])
 
     # Gets number of points remaining for each category
     pc_search_pts_remaining = check_driver.find_element_by_xpath(
-        '//*[@id="modern-flyout"]/div/div[5]/div/div/div[1]/div/div/text()').text
+        '//*[@id="modern-flyout"]/div/div[5]/div/div/div[1]/div/div').text
+    slash_index = pc_search_pts_remaining.index("/")
     pc_search_pts_remaining = int(
-        pc_search_pts_remaining[4:]) - int(pc_search_pts_remaining[:3])
+        pc_search_pts_remaining[slash_index+1:]) - int(pc_search_pts_remaining[:slash_index])
 
     edge_search_pts_remaining = check_driver.find_element_by_xpath(
-        '//*[@id="modern-flyout"]/div/div[5]/div/div/div[2]/div/div/text()').text
+        '//*[@id="modern-flyout"]/div/div[5]/div/div/div[2]/div/div').text
+    slash_index = edge_search_pts_remaining.index("/")
     edge_search_pts_remaining = int(
-        edge_search_pts_remaining[4:]) - int(edge_search_pts_remaining[:3])
+        edge_search_pts_remaining[slash_index+1:]) - int(edge_search_pts_remaining[:slash_index])
 
     mobile_search_pts_remaining = check_driver.find_element_by_xpath(
-        '//*[@id="modern-flyout"]/div/div[5]/div/div/div[3]/div/div/text()').text
+        '//*[@id="modern-flyout"]/div/div[5]/div/div/div[3]/div/div').text
+    slash_index = mobile_search_pts_remaining.index("/")
     mobile_search_pts_remaining = int(
-        mobile_search_pts_remaining[4:]) - int(mobile_search_pts_remaining[:3])
+        mobile_search_pts_remaining[slash_index+1:]) - int(mobile_search_pts_remaining[:slash_index])
 
-    points.append(pc_search_pts_remaining,
-                  mobile_search_pts_remaining, edge_search_pts_remaining)
+    points.append(pc_search_pts_remaining)
+    points.append(mobile_search_pts_remaining)
+    points.append(edge_search_pts_remaining)
 
 
 def random_searches(driver_search, num):
@@ -275,7 +301,11 @@ def random_searches(driver_search, num):
 
     def randomWordDefinition():
         # Example search: exemptions define5
-        return(str(random.choice(r)) + random.choice([" def", " define", " definition"] + int(random.randint(0, 9))))
+        random_word_search = str(random.choice(r))
+        random_word_search += random.choice([" def", " define", " definition"])
+        random_word_search += str(random.randint(0, 9))
+
+        return random_word_search
 
     for i in range(int(num)):
         stringtosearch = random.choice(
@@ -304,7 +334,7 @@ def main():
         driver = create_driver(False, False)  # Creates the desktop driver
         login(driver, logins[i])  # Logs in on desktop driver
         # Checks the number of points and adds it to pts list
-        pts = check_num_pts(driver)
+        pts = updated_check_num_pts(driver)
         print(pts)  # Prints out the pts list
 
         if len(pts[0]) == 3:
@@ -317,7 +347,7 @@ def main():
                 if not pts[0][1]:
                     mobilePts(False, (pts[2][1] - pts[1][1])/5, logins[i])
 
-                pts = check_num_pts(driver)
+                pts = updated_check_num_pts(driver)
                 print(pts)
 
                 tries += 1
@@ -334,7 +364,7 @@ def main():
                 random_searches(
                     driver, ((pts[2][0]+pts[2][1]) - (pts[1][0]+pts[1][1]))/5+1)
 
-                pts = check_num_pts(driver)
+                pts = updated_check_num_pts(driver)
                 print(pts)
 
                 tries += 1
