@@ -60,7 +60,7 @@ with open('urls.json') as jfile:
 
 # Takes in the platform and whether or not it will be headless to create a webdriver
 def create_driver(mobile, headless):
-    # print('Mobile: ', mobile, 'headless: ', headless) ## Debug Code
+    print('Mobile: ', mobile, 'headless: ', headless) ## Debug Code
     # Selects the Correct User Agent
     if mobile:
         # Picks from 2 different useragents
@@ -68,17 +68,17 @@ def create_driver(mobile, headless):
     else:
         useragent = desktop_useragent
 
-        # Adds the Correct arguments
-        opts = Options()
-        # Tells chrome what the user agent is
-        opts.add_argument(f"user-agent={useragent}")
+    # Adds the Correct arguments
+    opts = Options()
+    # Tells chrome what the user agent is
+    opts.add_argument(f"user-agent={useragent}")
 
-        if headless:
-            opts.add_argument('--headless')  # Turns on headless mode
-            opts.add_experimental_option(
-                'excludeSwitches', ['enable-logging'])  # Turns off verbose logging
-        # Creates webdriver with options and returns it
-        return webdriver.Chrome(chrome_path, options=opts)
+    if headless:
+        opts.add_argument('--headless')  # Turns on headless mode
+        opts.add_experimental_option(
+            'excludeSwitches', ['enable-logging'])  # Turns off verbose logging
+    # Creates webdriver with options and returns it
+    return webdriver.Chrome(chrome_path, options=opts)
 
 
 # Logs in the User using the microsoft dialog
@@ -254,29 +254,54 @@ def updated_check_num_pts(check_driver):
         # ↓ Done since the join now button takes you to bing.com and not to points pg
         check_driver.get(url_data["points_url"])
 
-    # Gets number of points remaining for each category
-    pc_search_pts_remaining = check_driver.find_element_by_xpath(
-        '//*[@id="modern-flyout"]/div/div[5]/div/div/div[1]/div/div').text
-    slash_index = pc_search_pts_remaining.index("/")
-    pc_search_pts_remaining = int(
-        pc_search_pts_remaining[slash_index+1:]) - int(pc_search_pts_remaining[:slash_index])
+    # Checking level2/level1
+    lvlcheck = check_driver.find_elements_by_xpath(element_data["mobile_search_full_xpath"])
+    lvl2 = len(lvlcheck) > 0
 
-    edge_search_pts_remaining = check_driver.find_element_by_xpath(
-        '//*[@id="modern-flyout"]/div/div[5]/div/div/div[2]/div/div').text
-    slash_index = edge_search_pts_remaining.index("/")
-    edge_search_pts_remaining = int(
-        edge_search_pts_remaining[slash_index+1:]) - int(edge_search_pts_remaining[:slash_index])
+    if lvl2:
+        print("level2")
+        # Gets number of points remaining for each category
+        pc_search_pts_remaining = check_driver.find_element_by_xpath(
+            '//*[@id="modern-flyout"]/div/div[5]/div/div/div[1]/div/div').text
+        slash_index = pc_search_pts_remaining.index("/")
+        pc_search_pts_remaining = int(
+            pc_search_pts_remaining[slash_index+1:]) - int(pc_search_pts_remaining[:slash_index])
 
-    mobile_search_pts_remaining = check_driver.find_element_by_xpath(
-        '//*[@id="modern-flyout"]/div/div[5]/div/div/div[3]/div/div').text
-    slash_index = mobile_search_pts_remaining.index("/")
-    mobile_search_pts_remaining = int(
-        mobile_search_pts_remaining[slash_index+1:]) - int(mobile_search_pts_remaining[:slash_index])
+        edge_search_pts_remaining = check_driver.find_element_by_xpath(
+            '//*[@id="modern-flyout"]/div/div[5]/div/div/div[2]/div/div').text
+        slash_index = edge_search_pts_remaining.index("/")
+        edge_search_pts_remaining = int(
+            edge_search_pts_remaining[slash_index+1:]) - int(edge_search_pts_remaining[:slash_index])
 
-    points.append(pc_search_pts_remaining)
-    points.append(mobile_search_pts_remaining)
-    points.append(edge_search_pts_remaining)
+        mobile_search_pts_remaining = check_driver.find_element_by_xpath(
+            '//*[@id="modern-flyout"]/div/div[5]/div/div/div[3]/div/div').text
+        slash_index = mobile_search_pts_remaining.index("/")
+        mobile_search_pts_remaining = int(
+            mobile_search_pts_remaining[slash_index+1:]) - int(mobile_search_pts_remaining[:slash_index])
 
+        points.append(pc_search_pts_remaining)
+        points.append(edge_search_pts_remaining)
+        points.append(mobile_search_pts_remaining)
+    else:
+        print("lvl1")
+        # Gets number of points remaining for each category
+        pc_search_pts_remaining = check_driver.find_element_by_xpath(
+            '//*[@id="modern-flyout"]/div/div[5]/div/div/div[1]/div/div').text
+        print(pc_search_pts_remaining)
+        slash_index = pc_search_pts_remaining.index("/")
+        pc_search_pts_remaining = int(
+            pc_search_pts_remaining[slash_index+1:]) - int(pc_search_pts_remaining[11:slash_index])
+
+        edge_search_pts_remaining = check_driver.find_element_by_xpath(
+            '//*[@id="modern-flyout"]/div/div[5]/div/div/div[2]/div/div').text
+        slash_index = edge_search_pts_remaining.index("/")
+        edge_search_pts_remaining = int(
+            edge_search_pts_remaining[slash_index+1:]) - int(edge_search_pts_remaining[11:slash_index])
+
+        points.append(pc_search_pts_remaining)
+        points.append(edge_search_pts_remaining)
+
+    return points
 
 def random_searches(driver_search, num):
     """
@@ -289,14 +314,15 @@ def random_searches(driver_search, num):
 
     # Generates random coordinates and enters in the search query
     def coordinate_generator():
-        cardinallr = ['E', 'W']
-        cardinaltd = ['N', 'S']
+        pos_neg = ["", "-"]
         num1 = random.randint(1, 75)
         num2 = random.randint(1, 75)
+        num1_dec = random.randint(1, 9999)
+        num2_dec = random.randint(1, 9999)
+        num1_posneg = random.choice(pos_neg)
+        num2_posneg = random.choice(pos_neg)
 
-        direction1 = random.choice(cardinallr)
-        direction2 = random.choice(cardinaltd)
-        return (f'{num1}° {direction1}, {num2}° {direction2}' +
+        return (f'{num1_posneg}{num1}.{num1_dec}, {num2_posneg}{num2}.{num2_dec}' +
                 f" {random.choice(['coord', 'coordinate', 'map', 'zip code'])}")
 
     # Creates random equations
@@ -345,18 +371,45 @@ def main():
         pts = updated_check_num_pts(driver)
         print(pts)  # Prints out the pts list
 
-        if len(pts[0]) == 3:
+        pc_complete = (pts[0] == 0)
+        edge_complete = (pts[1] == 0)
+        
+        # if len(pts[0]) == 3:
+        #     tries = 0
+        #     while not (pts[0][0] and pts[0][1] and pts[0][2]):
+        #         if not (pts[0][0] and pts[0][2]):
+        #             random_searches(
+        #                 driver, ((pts[2][0]+pts[2][2]) - (pts[1][0]+pts[1][2]))/5+1)
+
+        #         if not pts[0][1]:
+        #             mobilePts(False, (pts[2][1] - pts[1][1])/5, logins[i])
+
+        #         pts = updated_check_num_pts(driver)
+        #         print(pts)
+
+        if len(pts) == 3:
+            mobile_complete = (pts[2] == 0)
             tries = 0
-            while not (pts[0][0] and pts[0][1] and pts[0][2]):
-                if not (pts[0][0] and pts[0][2]):
-                    random_searches(
-                        driver, ((pts[2][0]+pts[2][2]) - (pts[1][0]+pts[1][2]))/5+1)
-
-                if not pts[0][1]:
-                    mobilePts(False, (pts[2][1] - pts[1][1])/5, logins[i])
-
+            while (not(pc_complete and edge_complete and mobile_complete)) and (tries < 3):
+                pc_complete = (pts[0] == 0)
+                edge_complete = (pts[1] == 0)
+                mobile_complete = (pts[2] == 0)
+                if not(pc_complete and edge_complete):
+                    random_searches(driver, ((pts[0]+pts[1])/5)+1)
+                if not mobile_complete:
+                    mobilePts(False, (pts[2]/5)+1, logins[i])
+                pts= updated_check_num_pts(driver)
+                print(pts)
+                tries+=1
+            driver.quit()
+        else:
+            tries = 0
+            while (not(pc_complete and edge_complete)) and (tries < 3):
+                pc_complete = (pts[0] == 0)
+                edge_complete = (pts[1] == 0)
+                random_searches(driver, ((pts[0]+pts[1])/5)+1)
                 pts = updated_check_num_pts(driver)
                 print(pts)
-
-
+                tries += 1
+            driver.quit()
 main()
