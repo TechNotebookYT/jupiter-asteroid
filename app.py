@@ -64,63 +64,63 @@ with open(f'{current_path}/userpass.txt') as passdoc:
         return webdriver.Chrome(chrome_path, options=opts)
 
 
-    # Logs in the User using the microsoft dialog
-    def login(driver_login, acct):
-        logged_in = False  # True when successfully logged in
+# Logs in the User using the microsoft dialog
+def login(driver_login, acct):
+    logged_in = False  # True when successfully logged in
 
-        user, passwd = acct  # Sets Username and Password values from acct list
+    user, passwd = acct  # Sets Username and Password values from acct list
 
-        while not logged_in:
-            print("Attempting Login...")
-            driver_login.get('https://login.live.com/')
-            time.sleep(3)  # Wait for page to load
+    while not logged_in:
+        print("Attempting Login...")
+        driver_login.get('https://login.live.com/')
+        time.sleep(3)  # Wait for page to load
 
-            driver_login.find_element_by_name('loginfmt').send_keys(user)
-            time.sleep(1)  # Delay Between Send Keys and Click
-            driver_login.find_element_by_xpath(
-                '//*[@id="idSIButton9"]').click()  # next button
-            time.sleep(2)  # Delay for password screen
-            driver_login.find_element_by_name('passwd').send_keys(passwd)
-            time.sleep(1)  # Delay Between Send Keys and Click
-            driver_login.find_element_by_xpath(
-                '//*[@id="idSIButton9"]').click()  # sign in button
-            time.sleep(3)
+        driver_login.find_element_by_name('loginfmt').send_keys(user)
+        time.sleep(1)  # Delay Between Send Keys and Click
+        driver_login.find_element_by_xpath(
+            '//*[@id="idSIButton9"]').click()  # next button
+        time.sleep(2)  # Delay for password screen
+        driver_login.find_element_by_name('passwd').send_keys(passwd)
+        time.sleep(1)  # Delay Between Send Keys and Click
+        driver_login.find_element_by_xpath(
+            '//*[@id="idSIButton9"]').click()  # sign in button
+        time.sleep(3)
 
-            logged_in = login_check(driver_login)
-            print("Logged In: ", logged_in)
-            # print("User: ", user) ## Debug Code
-            # print("Pass: ", passwd) ## Debug Code
-        print("Login Successful: ", user)  # Prints Email to the Screen
+        logged_in = login_check(driver_login)
+        print("Logged In: ", logged_in)
+        # print("User: ", user) ## Debug Code
+        # print("Pass: ", passwd) ## Debug Code
+    print("Login Successful: ", user)  # Prints Email to the Screen
 
 
-    def login_check(check_driver):
-        msft_acct_check = False  # This is the check for the microsoft account page
-        bg_acct_check = False  # This is the check for the bing account page
+def login_check(check_driver):
+    msft_acct_check = False  # This is the check for the microsoft account page
+    bg_acct_check = False  # This is the check for the bing account page
 
-        # Checks if name is on the webpage
-        check_driver.get('https://account.microsoft.com/')
-        time.sleep(2)
-        account_body = check_driver.find_element_by_tag_name(
-            "body").text  # All of the text on the webpage
+    # Checks if name is on the webpage
+    check_driver.get('https://account.microsoft.com/')
+    time.sleep(2)
+    account_body = check_driver.find_element_by_tag_name(
+        "body").text  # All of the text on the webpage
 
-        check_driver.get('https://www.bing.com/search?q=when+is+the+sunset')
-        search_engine_fullpage = check_driver.page_source.encode('utf-8')
+    check_driver.get('https://www.bing.com/search?q=when+is+the+sunset')
+    search_engine_fullpage = check_driver.page_source.encode('utf-8')
 
-        if (((firstName in account_body) or (lastName in account_body))):
-            msft_acct_check = True
+    if (((firstName in account_body) or (lastName in account_body))):
+        msft_acct_check = True
 
-        signin_tries = 0
-        
-        while(bg_acct_check == False and signin_tries <= 3):
-            if ((firstName in str(search_engine_fullpage)) or (lastName in str(search_engine_fullpage))):
-                bg_acct_check = True
-            else:
-                signin_tries += 1
-                check_driver.find_element_by_xpath('//*[@id="id_a"]').click()
-                time.sleep(1)
-                search_engine_fullpage = check_driver.page_source.encode('utf-8')
+    signin_tries = 0
+    
+    while(bg_acct_check == False and signin_tries <= 3):
+        if ((firstName in str(search_engine_fullpage)) or (lastName in str(search_engine_fullpage))):
+            bg_acct_check = True
+        else:
+            signin_tries += 1
+            check_driver.find_element_by_xpath('//*[@id="id_a"]').click()
+            time.sleep(1)
+            search_engine_fullpage = check_driver.page_source.encode('utf-8')
 
-        return bg_acct_check and msft_acct_check
+    return bg_acct_check and msft_acct_check
 
 
 # Checks the num of points earned on the present day
