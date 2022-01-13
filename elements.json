@@ -1,4 +1,7 @@
 {
     "join_now_btn_xpath": "//*[@id=\"modern-flyout\"]/div/div/div/div[2]/a",
-    "mobile_search_full_xpath": "//*[@id=\"modern-flyout\"]/div/div[5]/div/div/div[3]/div/div"
+    "mobile_search_full_xpath": "//*[@id=\"modern-flyout\"]/div/div[5]/div/div/div[3]/div/div",
+    "pc_search_pts_xpath": "//*[@id=\"modern-flyout\"]/div/div[5]/div/div/div[1]/div/div",
+    "edge_pts_xpath": "//*[@id=\"modern-flyout\"]/div/div[5]/div/div/div[2]/div/div",
+    "mobile_search_pts_xpath": "//*[@id=\"modern-flyout\"]/div/div[5]/div/div/div[3]/div/div"
 }
