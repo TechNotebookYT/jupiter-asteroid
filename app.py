@@ -51,14 +51,6 @@ with open(f'{current_path}/userpass.txt') as passdoc:
         else:
             logins[len(logins)-1].append(line)
 
-# Imports element data from json file
-with open('elements.json') as jfile:
-    element_data = json.load(jfile)
-
-# Imports url data from json file
-with open('urls.json') as jfile:
-    url_data = json.load(jfile)
-
 # Takes in the platform and whether or not it will be headless to create a webdriver
 def create_driver(mobile, headless):
     print('Mobile: ', mobile, 'headless: ', headless) ## Debug Code
