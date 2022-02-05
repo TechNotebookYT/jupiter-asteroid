@@ -26,14 +26,6 @@ firstName = ''
 lastName = ''
 current_path = os.path.dirname(os.path.realpath(__file__))
 
-# Imports element data from json file
-with open('elements.json') as jfile:
-    element_data = json.load(jfile)
-
-# Imports url data from json file
-with open('urls.json') as jfile:
-    url_data = json.load(jfile)
-
 # Argparse Specific - takes input on first and last name for use in logincheck function
 parser = argparse.ArgumentParser()
 parser.add_argument("first_name")
@@ -50,6 +42,14 @@ with open(f'{current_path}/userpass.txt') as passdoc:
             logins.append([line])
         else:
             logins[len(logins)-1].append(line)
+
+# Imports element data from json file
+with open(f'{current_path}/elements.json') as jfile:
+    element_data = json.load(jfile)
+
+# Imports url data from json file
+with open(f'{current_path}/urls.json') as jfile:
+    url_data = json.load(jfile)
 
 # Takes in the platform and whether or not it will be headless to create a webdriver
 def create_driver(mobile, headless):
@@ -113,7 +113,7 @@ def login_check(check_driver):
     account_body = check_driver.find_element_by_tag_name(
         "body").text  # All of the text on the webpage
 
-    check_driver.get('https://www.bing.com/search?q=when+is+the+sunset')
+    check_driver.get(url_data['sunset_search'])
     search_engine_fullpage = check_driver.page_source.encode('utf-8')
 
     if (((firstName in account_body) or (lastName in account_body))):
@@ -133,7 +133,7 @@ def login_check(check_driver):
     return bg_acct_check and msft_acct_check
 
 
-# Checks the num of points earned on the present day
+# Checks the num of points earned on the present day {OLD}
 def check_num_pts(check_driver):
     pcsearch_complete = False
     mobilesearch_complete = False
@@ -255,19 +255,19 @@ def updated_check_num_pts(check_driver):
         print("level2")
         # Gets number of points remaining for each category
         pc_search_pts_remaining = check_driver.find_element_by_xpath(
-            '//*[@id="modern-flyout"]/div/div[5]/div/div/div[1]/div/div').text
+            element_data['pc_search_pts_lvl2_xpath']).text
         slash_index = pc_search_pts_remaining.index("/")
         pc_search_pts_remaining = int(
             pc_search_pts_remaining[slash_index+1:]) - int(pc_search_pts_remaining[:slash_index])
 
         edge_search_pts_remaining = check_driver.find_element_by_xpath(
-            '//*[@id="modern-flyout"]/div/div[5]/div/div/div[2]/div/div').text
+            element_data['edge_search_pts_lvl2_xpath']).text
         slash_index = edge_search_pts_remaining.index("/")
         edge_search_pts_remaining = int(
             edge_search_pts_remaining[slash_index+1:]) - int(edge_search_pts_remaining[:slash_index])
 
         mobile_search_pts_remaining = check_driver.find_element_by_xpath(
-            '//*[@id="modern-flyout"]/div/div[5]/div/div/div[3]/div/div').text
+            element_data['mobile_search_pts_lvl2_xpath']).text
         slash_index = mobile_search_pts_remaining.index("/")
         mobile_search_pts_remaining = int(
             mobile_search_pts_remaining[slash_index+1:]) - int(mobile_search_pts_remaining[:slash_index])
@@ -279,14 +279,14 @@ def updated_check_num_pts(check_driver):
         print("lvl1")
         # Gets number of points remaining for each category
         pc_search_pts_remaining = check_driver.find_element_by_xpath(
-            '//*[@id="modern-flyout"]/div/div[5]/div/div/div[1]/div/div').text
+            element_data['pc_search_pts_lvl1_xpath']).text
         print(pc_search_pts_remaining)
         slash_index = pc_search_pts_remaining.index("/")
         pc_search_pts_remaining = int(
             pc_search_pts_remaining[slash_index+1:]) - int(pc_search_pts_remaining[11:slash_index])
 
         edge_search_pts_remaining = check_driver.find_element_by_xpath(
-            '//*[@id="modern-flyout"]/div/div[5]/div/div/div[2]/div/div').text
+            element_data['edge_search_pts_lvl1_xpath']).text
         slash_index = edge_search_pts_remaining.index("/")
         edge_search_pts_remaining = int(
             edge_search_pts_remaining[slash_index+1:]) - int(edge_search_pts_remaining[11:slash_index])
@@ -358,7 +358,7 @@ def main():
     # lastName = 'Bala'
 
     for i in range(len(logins)):
-        driver = create_driver(False, False)  # Creates the desktop driver
+        driver = create_driver(False, True)  # Creates the desktop driver
         login(driver, logins[i])  # Logs in on desktop driver
         # Checks the number of points and adds it to pts list
         pts = updated_check_num_pts(driver)
@@ -366,19 +366,6 @@ def main():
 
         pc_complete = (pts[0] == 0)
         edge_complete = (pts[1] == 0)
-        
-        # if len(pts[0]) == 3:
-        #     tries = 0
-        #     while not (pts[0][0] and pts[0][1] and pts[0][2]):
-        #         if not (pts[0][0] and pts[0][2]):
-        #             random_searches(
-        #                 driver, ((pts[2][0]+pts[2][2]) - (pts[1][0]+pts[1][2]))/5+1)
-
-        #         if not pts[0][1]:
-        #             mobilePts(False, (pts[2][1] - pts[1][1])/5, logins[i])
-
-        #         pts = updated_check_num_pts(driver)
-        #         print(pts)
 
         if len(pts) == 3:
             mobile_complete = (pts[2] == 0)
@@ -390,7 +377,7 @@ def main():
                 if not(pc_complete and edge_complete):
                     random_searches(driver, ((pts[0]+pts[1])/5)+1)
                 if not mobile_complete:
-                    mobilePts(False, (pts[2]/5)+1, logins[i])
+                    mobilePts(True, (pts[2]/5)+1, logins[i])
                 pts= updated_check_num_pts(driver)
                 print(pts)
                 tries+=1
