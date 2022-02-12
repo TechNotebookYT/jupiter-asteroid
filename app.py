@@ -2,7 +2,7 @@
 # https://github.com/blackluv/Microsoft-Rewards-Bot/blob/master/ms_rewards.py
 # ^ Implement line #670
 # TODO - Add comments/add more to json
-from datetime import date
+import datetime
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import random
@@ -358,7 +358,8 @@ def main():
     # firstName = 'Pranav'
     # lastName = 'Bala'
 
-    print(date.today().strftime("%B %d, %Y"))
+    print(datetime.date.today().strftime("%B %d, %Y"))
+    print(datetime.datetime.now().strftime("%H:%M:%S"))
 
     for i in range(len(logins)):
         driver = create_driver(False, True)  # Creates the desktop driver
