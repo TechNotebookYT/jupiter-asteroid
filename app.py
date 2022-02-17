@@ -353,49 +353,50 @@ def mobilePts(headless, ptsRemaining, userpass):
 
 
 def main():
+    print(datetime.date.today().strftime("%B %d, %Y"))
+    print(datetime.datetime.now().strftime("%H:%M:%S"))
+
     # Imports first and last name from argparse
     firstName = args.first_name
     lastName = args.last_name
 
-    # firstName = 'Pranav'
-    # lastName = 'Bala'
+   
+    for i in range(2): #Runs 2 passes on accts
+        for i in range(len(logins)):
+            driver = create_driver(False, True)  # Creates the desktop driver
+            login(driver, logins[i])  # Logs in on desktop driver
+            # Checks the number of points and adds it to pts list
+            pts = updated_check_num_pts(driver)
+            print(pts)  # Prints out the pts list
 
-    print(datetime.date.today().strftime("%B %d, %Y"))
-    print(datetime.datetime.now().strftime("%H:%M:%S"))
+            pc_complete = (pts[0] == 0)
+            edge_complete = (pts[1] == 0)
 
-    for i in range(len(logins)):
-        driver = create_driver(False, True)  # Creates the desktop driver
-        login(driver, logins[i])  # Logs in on desktop driver
-        # Checks the number of points and adds it to pts list
-        pts = updated_check_num_pts(driver)
-        print(pts)  # Prints out the pts list
-
-        pc_complete = (pts[0] == 0)
-        edge_complete = (pts[1] == 0)
-
-        if len(pts) == 3:
-            mobile_complete = (pts[2] == 0)
-            tries = 0
-            while (not(pc_complete and edge_complete and mobile_complete)) and (tries < 3):
-                pc_complete = (pts[0] == 0)
-                edge_complete = (pts[1] == 0)
+            if len(pts) == 3:
                 mobile_complete = (pts[2] == 0)
-                if not(pc_complete and edge_complete):
+                tries = 0
+                while (not(pc_complete and edge_complete and mobile_complete)) and (tries < 3):
+                    pc_complete = (pts[0] == 0)
+                    edge_complete = (pts[1] == 0)
+                    mobile_complete = (pts[2] == 0)
+                    if not(pc_complete and edge_complete):
+                        random_searches(driver, ((pts[0]+pts[1])/5)+1)
+                    if not mobile_complete:
+                        mobilePts(True, (pts[2]/5)+1, logins[i])
+                    pts= updated_check_num_pts(driver)
+                    print(pts)
+                    tries+=1
+                driver.quit()
+            else:
+                tries = 0
+                while (not(pc_complete and edge_complete)) and (tries < 3):
+                    pc_complete = (pts[0] == 0)
+                    edge_complete = (pts[1] == 0)
                     random_searches(driver, ((pts[0]+pts[1])/5)+1)
-                if not mobile_complete:
-                    mobilePts(True, (pts[2]/5)+1, logins[i])
-                pts= updated_check_num_pts(driver)
-                print(pts)
-                tries+=1
-            driver.quit()
-        else:
-            tries = 0
-            while (not(pc_complete and edge_complete)) and (tries < 3):
-                pc_complete = (pts[0] == 0)
-                edge_complete = (pts[1] == 0)
-                random_searches(driver, ((pts[0]+pts[1])/5)+1)
-                pts = updated_check_num_pts(driver)
-                print(pts)
-                tries += 1
-            driver.quit()
+                    pts = updated_check_num_pts(driver)
+                    print(pts)
+                    tries += 1
+                driver.quit()
+
 main()
+
