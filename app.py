@@ -326,7 +326,9 @@ def random_searches(driver_search, num):
         return f"{num1}{random.choice(['*', '-', '^'])}{num2}"
 
     r = RandomWords().get_random_words()  # Random word list
-
+    while not r:
+        r = RandomWords().get_random_words()
+    
     def randomWordDefinition():
         # Example search: exemptions define5
         random_word_search = str(random.choice(r))
