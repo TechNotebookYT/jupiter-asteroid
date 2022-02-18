@@ -317,13 +317,15 @@ def random_searches(driver_search, num):
         num2_posneg = random.choice(pos_neg)
 
         return (f'{num1_posneg}{num1}.{num1_dec}, {num2_posneg}{num2}.{num2_dec}' +
-                f" {random.choice(['coord', 'coordinate', 'map', 'zip code'])}")
+                f" {random.choice(['coord', 'coordinate', 'map', 'zip code', 'zip', 'location'])}")
 
     # Creates random equations
     def numbergen():
-        num1 = random.randint(1, 99999)
+        num1 = random.randint(1, 999)
+        num1_dec = num1 = random.randint(1, 999)
         num2 = random.randint(1, 9999)
-        return f"{num1}{random.choice(['*', '-', '^'])}{num2}"
+        num2_dec = random.randint(1, 99)
+        return f"{num1}.{num1_dec}{random.choice(['*', '-', '^'])}{num2}.{num2_dec}"
 
     r = RandomWords().get_random_words()  # Random word list
     while not r:
@@ -332,7 +334,7 @@ def random_searches(driver_search, num):
     def randomWordDefinition():
         # Example search: exemptions define5
         random_word_search = str(random.choice(r))
-        random_word_search += random.choice([" def", " define", " definition"])
+        random_word_search += random.choice([" def", " define", " definitio", "definition", "defin", "meaning"])
         random_word_search += str(random.randint(0, 9))
 
         return random_word_search
@@ -342,7 +344,7 @@ def random_searches(driver_search, num):
             [coordinate_generator(), numbergen(), randomWordDefinition()])
         driver_search.get(f'https://www.bing.com/search?q={stringtosearch}')
         print(str(int((i+1)/num*100))+"%")
-        time.sleep(random.randint(1, 4))
+        time.sleep(random.randint(2, 5))
 
 
 def mobilePts(headless, ptsRemaining, userpass):
@@ -360,7 +362,8 @@ def main():
     firstName = args.first_name
     lastName = args.last_name
 
-   
+    # firstName = 'Pranav'
+    # lastName = 'Bala'
     for i in range(2): #Runs 2 passes on accts
         for i in range(len(logins)):
             driver = create_driver(False, True)  # Creates the desktop driver
