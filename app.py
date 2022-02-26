@@ -10,6 +10,7 @@ import time
 import argparse
 import os
 from random_word import RandomWords
+from country_list import countries_for_language
 import json
 
 # Useragents to change browser
@@ -341,9 +342,16 @@ def random_searches(driver_search, num):
 
         return random_word_search
 
+    def randomCountryStats():
+        country_attributes = ['gdp', 'capital', 'population', 'average income', 'language', 'map', 'continent', 'largest city', 'COVID', 'coronavirus', 'population density', 'news', 'president', 'internet', 'size']
+
+        countries = list(countries_for_language('en'))
+        country = countries[random.randint(0, 248)][1]
+        return (country + " " + random.choice(country_attributes))
+
     for i in range(int(num)):
         stringtosearch = random.choice(
-            [coordinate_generator(), numbergen(), randomWordDefinition()])
+            [coordinate_generator(), numbergen(), randomWordDefinition(), randomCountryStats()])
         driver_search.get(f'https://www.bing.com/search?q={stringtosearch}')
         print(str(int((i+1)/num*100))+"%")
         time.sleep(random.randint(2, 5))
