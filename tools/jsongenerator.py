@@ -11,7 +11,7 @@ else:
             jsonstr += "\\" + char
         else:
             jsonstr += char
-    print(f'"{name}": "{jsonstr}",')
-    print(f"element_data['{name}']")
+    print(f'"{name}_xpath": "{jsonstr}",')
+    print(f"element_data['{name}_xpath']")
 
 
