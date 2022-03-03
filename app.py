@@ -13,6 +13,14 @@ from random_word import RandomWords
 from country_list import countries_for_language
 import json
 
+# Options
+headless_mode = True
+
+# RandomWords Library Specific
+r = RandomWords().get_random_words()  # Random word list
+while not r:
+    r = RandomWords().get_random_words()
+
 # Useragents to change browser
 desktop_useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4482.0 Safari/537.36 Edg/92.0.874.0"
 mobile_useragents = [
@@ -34,7 +42,17 @@ current_path = os.path.dirname(os.path.realpath(__file__))
 parser = argparse.ArgumentParser()
 parser.add_argument("first_name")
 parser.add_argument("last_name")
+parser.add_argument("-d", "--debug", help="turn off headless",
+                    action="store_true")
 args = parser.parse_args()
+
+# Imports first and last name from argparse
+firstName = args.first_name
+lastName = args.last_name
+
+if args.debug: # Checks if debug mode turned on
+    headless_mode = False
+
 
 # You Need a file called userpass.txt with the usernames and passwords on different lines
 # !!!!!! Make sure you have a newline on the last line of your userpass.txt file
@@ -100,7 +118,7 @@ def login(driver_login, acct):
             '//*[@id="idSIButton9"]').click()  # sign in button
         time.sleep(3)
 
-        logged_in = login_check(driver_login)
+        logged_in = login_check_v2(driver_login)
         print("Logged In: ", logged_in)
         # print("User: ", user) ## Debug Code
         # print("Pass: ", passwd) ## Debug Code
@@ -117,7 +135,7 @@ def login_check(check_driver):
     account_body = check_driver.find_element_by_tag_name(
         "body").text  # All of the text on the webpage
 
-    check_driver.get(url_data['sunset_search'])
+    check_driver.get(url_data['time_search'])
     search_engine_fullpage = check_driver.page_source.encode('utf-8')
 
     if (((firstName in account_body) or (lastName in account_body))):
@@ -130,14 +148,91 @@ def login_check(check_driver):
             bg_acct_check = True
         else:
             signin_tries += 1
-            check_driver.find_element_by_xpath('//*[@id="id_a"]').click()
+            if len(check_driver.find_elements_by_xpath('//*[@id="id_a"]')) > 0:
+                check_driver.find_element_by_xpath('//*[@id="id_a"]').click()
+            elif len(check_driver.find_elements_by_xpath(element_data['mobile_bing_hamburger'])) > 0:
+                check_driver.find_element_by_xpath(element_data['mobile_bing_hamburger']).click()
+                time.sleep(2)
+                if (len(check_driver.find_elements_by_xpath(element_data['mobile_post_ham_pfp_xpath']))) > 0:
+                    check_driver.find_element_by_xpath(
+                        element_data['mobile_post_ham_pfp_xpath']).click()
+                    time.sleep(2)
+                    input()
+                    bg_acct_check = True
+                    print('hamburger checked')
             time.sleep(1)
             search_engine_fullpage = check_driver.page_source.encode('utf-8')
 
     return bg_acct_check and msft_acct_check
 
 
-# Checks the num of points earned on the present day {OLD}
+def login_check_v2(check_driver):
+    # Checks if name is on the webpage
+    check_driver.get('https://account.microsoft.com/')
+    time.sleep(2)
+    account_body = check_driver.find_element_by_tag_name(
+        "body").text  # All of the text on the webpage
+
+    if not ((firstName in account_body) or (lastName in account_body)):
+        return False
+
+    # ---- Sign In Button ----
+    
+    # Make generic search
+    check_driver.get(url_data['time_search'])
+    # Source code of full webpage
+    search_engine_fullpage = str(check_driver.page_source.encode('utf-8'))
+
+    # Checks if using mobile or desktop useragent 
+    mobile = check_driver.execute_script("return navigator.userAgent") in mobile_useragents
+    print(not mobile)
+
+    signin_tries = 0
+    while (signin_tries < 3) and (not check_name_on_page(search_engine_fullpage)):
+        signin_tries += 1
+        if not mobile:
+            if len(check_driver.find_elements_by_xpath('//*[@id="id_a"]')) > 0:
+                check_driver.find_element_by_xpath('//*[@id="id_a"]').click()
+                print("line")
+               
+        else:
+            if len(check_driver.find_elements_by_xpath(element_data['mobile_bing_hamburger'])) > 0:
+                check_driver.find_element_by_xpath(
+                    element_data['mobile_bing_hamburger']).click()
+                time.sleep(2)
+                if element_on_page('mobile_post_ham_pfp_xpath', check_driver):
+                    check_driver.find_element_by_xpath(
+                        element_data['mobile_post_ham_pfp_xpath']).click()
+        
+        
+        # Source code of full webpage
+        search_engine_fullpage = str(check_driver.page_source.encode('utf-8'))
+        print(check_name_on_page(search_engine_fullpage))
+    return False
+
+def element_on_page(elements_key, element_check_driver):
+    """
+    Element On Page
+    ----
+    Returns whether the xpath is present on the page
+    """
+    if (len(element_check_driver.find_elements_by_xpath(element_data[elements_key]))) > 0:
+        return True
+    return False
+
+def check_name_on_page(sourceCode):
+    """
+    Check Name On Page
+    --
+    Checks if the name is present in the sourcecode of the page
+    """
+    
+    if ((firstName in sourceCode) or (lastName in sourceCode)):
+        return True
+    return False
+
+
+# Checks the num of points earned on the present day !**{OLD}**!
 def check_num_pts(check_driver):
     pcsearch_complete = False
     mobilesearch_complete = False
@@ -329,21 +424,16 @@ def random_searches(driver_search, num):
         num2 = random.randint(1, 9999)
         num2_dec = random.randint(1, 99)
         return f"{num1}.{num1_dec}{random.choice(['*', '-', '^'])}{num2}.{num2_dec}"
-
-    r = RandomWords().get_random_words()  # Random word list
-    while not r:
-        r = RandomWords().get_random_words()
     
     def randomWordDefinition():
         # Example search: exemptions define5
         random_word_search = str(random.choice(r))
-        random_word_search += random.choice([" def", " define", " definitio", "definition", "defin", "meaning"])
-        random_word_search += str(random.randint(0, 9))
+        random_word_search += random.choice([" def", " defin", " defition", " definition", " drfine", " meanin"])
 
         return random_word_search
 
     def randomCountryStats():
-        country_attributes = ['gdp', 'capital', 'population', 'average income', 'language', 'map', 'continent', 'largest city', 'COVID', 'coronavirus', 'population density', 'news', 'president', 'internet', 'size']
+        country_attributes = ['metric or imperial', 'NATO', 'gdp', 'capital', 'population', 'average income', 'language', 'map', 'continent', 'largest city', 'COVID', 'coronavirus', 'population density', 'news', 'president', 'internet', 'size']
 
         countries = list(countries_for_language('en'))
         country = countries[random.randint(0, 248)][1]
@@ -354,12 +444,13 @@ def random_searches(driver_search, num):
             [coordinate_generator(), numbergen(), randomWordDefinition(), randomCountryStats()])
         driver_search.get(f'https://www.bing.com/search?q={stringtosearch}')
         print(str(int((i+1)/num*100))+"%")
-        time.sleep(random.randint(2, 5))
+        time.sleep(random.randint(1, 7))
 
 def complete_challenge_1(driver_challenge):
     driver_challenge.get(url_data['points_url'])
     time.sleep(2)
-    driver_challenge.find_element_by_xpath(element_data['daily_challenge_1']).click()
+    if len(driver_challenge.find_elements_by_xpath(element_data['daily_challenge_1'])) > 0:
+        driver_challenge.find_element_by_xpath(element_data['daily_challenge_1']).click()
 
 
 def mobilePts(headless, ptsRemaining, userpass):
@@ -373,15 +464,9 @@ def main():
     print(datetime.date.today().strftime("%B %d, %Y"))
     print(datetime.datetime.now().strftime("%H:%M:%S"))
 
-    # Imports first and last name from argparse
-    firstName = args.first_name
-    lastName = args.last_name
-
-    # firstName = 'Pranav'
-    # lastName = 'Bala'
     for i in range(2): #Runs 2 passes on accts
         for i in range(len(logins)):
-            driver = create_driver(False, True)  # Creates the desktop driver
+            driver = create_driver(False, headless_mode)  # Creates the desktop driver
             login(driver, logins[i])  # Logs in on desktop driver
             # Checks the number of points and adds it to pts list
             pts = updated_check_num_pts(driver)
@@ -403,7 +488,7 @@ def main():
                     if not(pc_complete and edge_complete):
                         random_searches(driver, ((pts[0]+pts[1])/5)+1)
                     if not mobile_complete:
-                        mobilePts(True, (pts[2]/5)+1, logins[i])
+                        mobilePts(headless_mode, (pts[2]/5)+1, logins[i])
                     pts= updated_check_num_pts(driver)
                     print(pts)
                     tries+=1
@@ -420,4 +505,3 @@ def main():
                 driver.quit()
 
 main()
-
