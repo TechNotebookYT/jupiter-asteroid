@@ -3,23 +3,24 @@
 # ^ Implement line #670
 # TODO - Add comments/add more to json
 import datetime
+import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import random
 import time
 import argparse
 import os
-from random_word import RandomWords
 from country_list import countries_for_language
 import json
 
 # Options
 headless_mode = True
 
-# RandomWords Library Specific
-r = RandomWords().get_random_words()  # Random word list
-while not r:
-    r = RandomWords().get_random_words()
+# RandomWords Specific
+r = list(requests.get(
+    "https://random-word-api.herokuapp.com/word?number=50").json())
+
+print(r[5])
 
 # Useragents to change browser
 desktop_useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4482.0 Safari/537.36 Edg/92.0.874.0"
@@ -217,7 +218,9 @@ def element_on_page(elements_key, element_check_driver):
     Returns whether the xpath is present on the page
     """
     if (len(element_check_driver.find_elements_by_xpath(element_data[elements_key]))) > 0:
+        print("Element on page True")
         return True
+    print("Element on page False")
     return False
 
 def check_name_on_page(sourceCode):
