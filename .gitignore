@@ -1,5 +1,6 @@
 *.txt
 randomsearches2.py
+*.js
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
