@@ -20,7 +20,6 @@ headless_mode = True
 r = list(requests.get(
     "https://random-word-api.herokuapp.com/word?number=50").json())
 
-print(r[5])
 
 # Useragents to change browser
 desktop_useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4482.0 Safari/537.36 Edg/92.0.874.0"
@@ -108,16 +107,17 @@ def login(driver_login, acct):
         driver_login.get('https://login.live.com/')
         time.sleep(3)  # Wait for page to load
 
-        driver_login.find_element_by_name('loginfmt').send_keys(user)
-        time.sleep(1)  # Delay Between Send Keys and Click
-        driver_login.find_element_by_xpath(
-            '//*[@id="idSIButton9"]').click()  # next button
-        time.sleep(2)  # Delay for password screen
-        driver_login.find_element_by_name('passwd').send_keys(passwd)
-        time.sleep(1)  # Delay Between Send Keys and Click
-        driver_login.find_element_by_xpath(
-            '//*[@id="idSIButton9"]').click()  # sign in button
-        time.sleep(3)
+        if (len(driver_login.find_elements_by_name('loginfmt')) > 0):
+            driver_login.find_element_by_name('loginfmt').send_keys(user)
+            time.sleep(1)  # Delay Between Send Keys and Click
+            driver_login.find_element_by_xpath(
+                '//*[@id="idSIButton9"]').click()  # next button
+            time.sleep(2)  # Delay for password screen
+            driver_login.find_element_by_name('passwd').send_keys(passwd)
+            time.sleep(1)  # Delay Between Send Keys and Click
+            driver_login.find_element_by_xpath(
+                '//*[@id="idSIButton9"]').click()  # sign in button
+            time.sleep(3)
 
         logged_in = login_check_v2(driver_login)
         print("Logged In: ", logged_in)
@@ -171,10 +171,10 @@ def login_check_v2(check_driver):
     # Checks if name is on the webpage
     check_driver.get('https://account.microsoft.com/')
     time.sleep(2)
-    account_body = check_driver.find_element_by_tag_name(
-        "body").text  # All of the text on the webpage
+    account_pg = str(check_driver.page_source.encode(
+        'utf-8'))  # Page source Code
 
-    if not ((firstName in account_body) or (lastName in account_body)):
+    if not check_name_on_page(account_pg):
         return False
 
     # ---- Sign In Button ----
@@ -186,7 +186,6 @@ def login_check_v2(check_driver):
 
     # Checks if using mobile or desktop useragent 
     mobile = check_driver.execute_script("return navigator.userAgent") in mobile_useragents
-    print(not mobile)
 
     signin_tries = 0
     while (signin_tries < 3) and (not check_name_on_page(search_engine_fullpage)):
@@ -194,22 +193,34 @@ def login_check_v2(check_driver):
         if not mobile:
             if len(check_driver.find_elements_by_xpath('//*[@id="id_a"]')) > 0:
                 check_driver.find_element_by_xpath('//*[@id="id_a"]').click()
-                print("line")
                
         else:
-            if len(check_driver.find_elements_by_xpath(element_data['mobile_bing_hamburger'])) > 0:
-                check_driver.find_element_by_xpath(
-                    element_data['mobile_bing_hamburger']).click()
-                time.sleep(2)
-                if element_on_page('mobile_post_ham_pfp_xpath', check_driver):
-                    check_driver.find_element_by_xpath(
-                        element_data['mobile_post_ham_pfp_xpath']).click()
-        
+            try:
+                time.sleep(1)
+                check_driver.find_element_by_id('mHamburger').click()
+            except:
+                try:
+                    check_driver.find_element_by_id('bnp_btn_accept').click()
+                except:
+                    pass
+                try:
+                    check_driver.find_element_by_id('bnp_ttc_close').click()
+                except:
+                    pass
+                time.sleep(1)
+                try:
+                    check_driver.find_element_by_id('mHamburger').click()
+                except:
+                    pass
+            try:
+                time.sleep(1)
+                check_driver.find_element_by_id('HBSignIn').click()
+            except:
+                pass
         
         # Source code of full webpage
-        search_engine_fullpage = str(check_driver.page_source.encode('utf-8'))
-        print(check_name_on_page(search_engine_fullpage))
-    return False
+        search_engine_fullpage = str(check_driver.page_source.encode('utf-8'))    
+    return check_name_on_page(search_engine_fullpage)
 
 def element_on_page(elements_key, element_check_driver):
     """
@@ -218,9 +229,7 @@ def element_on_page(elements_key, element_check_driver):
     Returns whether the xpath is present on the page
     """
     if (len(element_check_driver.find_elements_by_xpath(element_data[elements_key]))) > 0:
-        print("Element on page True")
         return True
-    print("Element on page False")
     return False
 
 def check_name_on_page(sourceCode):
