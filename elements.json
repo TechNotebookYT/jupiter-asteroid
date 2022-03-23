@@ -7,6 +7,6 @@
     "pc_search_pts_lvl1_xpath": "//*[@id=\"modern-flyout\"]/div/div[5]/div/div/div[1]/div/div",
     "edge_search_pts_lvl1_xpath": "//*[@id=\"modern-flyout\"]/div/div[5]/div/div/div[2]/div/div",
     "daily_challenge_1": "//*[@id=\"modern-flyout\"]/div/div[3]/div[2]/div[1]/div[2]/div/div[1]/a/div/div[2]/div[1]/div[1]/p",
-    "mobile_bing_hamburger": "//*[@id=\"mHamburger\"]/svg", 
-    "mobile_post_ham_pfp_xpath": "//*[@id=\"hb_p\"]"
+    "mobile_bing_hamburger": "//*[@id=\"mHamburger\"]",
+    "mobile_post_ham_pfp_xpath": "//*[@id=\"hb_s\"]"
 }
