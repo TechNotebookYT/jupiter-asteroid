@@ -245,7 +245,7 @@ def check_name_on_page(sourceCode):
 
 
 # Checks the num of points earned on the present day !**{OLD}**!
-def check_num_pts(check_driver):
+def DEPRECATED_check_num_pts(check_driver):
     pcsearch_complete = False
     mobilesearch_complete = False
     edgesearch_complete = False
@@ -445,7 +445,7 @@ def random_searches(driver_search, num):
         return random_word_search
 
     def randomCountryStats():
-        country_attributes = ['metric or imperial', 'NATO', 'gdp', 'capital', 'population', 'average income', 'language', 'map', 'continent', 'largest city', 'COVID', 'coronavirus', 'population density', 'news', 'president', 'internet', 'size']
+        country_attributes = ['metric or imperial', 'in NATO', 'gdp', 'capital', 'population', 'average income', 'language', 'map', 'continent', 'largest city', 'COVID', 'coronavirus', 'population density', 'news', 'president', 'internet', 'size']
 
         countries = list(countries_for_language('en'))
         country = countries[random.randint(0, 248)][1]
@@ -453,14 +453,16 @@ def random_searches(driver_search, num):
 
     for i in range(int(num)):
         stringtosearch = random.choice(
-            [coordinate_generator(), numbergen(), randomWordDefinition(), randomCountryStats()])
-        driver_search.get(f'https://www.bing.com/search?q={stringtosearch}')
-        print(str(int((i+1)/num*100))+"%")
-        time.sleep(random.randint(1, 7))
+            [coordinate_generator(), numbergen(), randomWordDefinition(), randomCountryStats()]) # Each function returns a unique search that
+        driver_search.get(f'https://www.bing.com/search?q={stringtosearch}') # Loads search
+        print(str(int((i+1)/num*100))+"%") # Prints percentage of searches completed on attempt
+        time.sleep(random.randint(1, 7)) # Time between searches
 
 def complete_challenge_1(driver_challenge):
+    # Completes the 1st challenge (10 pts)
     driver_challenge.get(url_data['points_url'])
-    time.sleep(2)
+    time.sleep(2.35)
+    # CHecks if challenge element is there, if so, it clicks the challenge
     if len(driver_challenge.find_elements_by_xpath(element_data['daily_challenge_1'])) > 0:
         driver_challenge.find_element_by_xpath(element_data['daily_challenge_1']).click()
 
@@ -473,6 +475,7 @@ def mobilePts(headless, ptsRemaining, userpass):
 
 
 def main():
+    # Datetime outputs for program logs
     print(datetime.date.today().strftime("%B %d, %Y"))
     print(datetime.datetime.now().strftime("%H:%M:%S"))
 
