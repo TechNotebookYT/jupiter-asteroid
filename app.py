@@ -101,7 +101,7 @@ def create_driver(mobile, headless):
         opts.add_experimental_option(
             'excludeSwitches', ['enable-logging'])  # Turns off verbose logging
     # Creates webdriver with options and returns it
-    driver = webdriver.Chrome(service=Service(
+    return webdriver.Chrome(service=Service(
         ChromeDriverManager().install()), options=opts)
 
 
