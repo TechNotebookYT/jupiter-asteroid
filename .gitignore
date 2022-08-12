@@ -1,6 +1,10 @@
 *.txt
 randomsearches2.py
 *.js
+*.exe
+*.ico
+*.bat
+notification_start.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
