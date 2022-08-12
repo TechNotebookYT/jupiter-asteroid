@@ -116,13 +116,13 @@ def login(driver_login, acct):
         driver_login.get('https://login.live.com/')
         time.sleep(3)  # Wait for page to load
 
-        if (len(driver_login.find_elements_by_name('loginfmt')) > 0):
+        if (len(driver_login.find_elements(By.NAME,'loginfmt')) > 0):
             driver_login.find_element(By.NAME, 'loginfmt').send_keys(user)
             time.sleep(1)  # Delay Between Send Keys and Click
             driver_login.find_element(By.XPATH, 
                 '//*[@id="idSIButton9"]').click()  # next button
             time.sleep(2)  # Delay for password screen
-            driver_login.find_element_by_name('passwd').send_keys(passwd)
+            driver_login.find_element(By.NAME, 'passwd').send_keys(passwd)
             time.sleep(1)  # Delay Between Send Keys and Click
             driver_login.find_element(By.XPATH, 
                 '//*[@id="idSIButton9"]').click()  # sign in button
@@ -142,7 +142,7 @@ def login_check(check_driver):
     # Checks if name is on the webpage
     check_driver.get('https://account.microsoft.com/')
     time.sleep(2)
-    account_body = check_driver.find_element_by_tag_name(
+    account_body = check_driver.find_element(By.TAG_NAME,
         "body").text  # All of the text on the webpage
 
     check_driver.get(url_data['time_search'])
@@ -273,7 +273,7 @@ def DEPRECATED_check_num_pts(check_driver):
 
     lvl2Field = 'Mobile search'  # This is only present if the account is at level 2
 
-    bodyTag = check_driver.find_element_by_tag_name(
+    bodyTag = check_driver.find_element(By.TAG_NAME,
         "body")  # Returns everything in the body tag
 
     # Checks if the account is at level 2 status and sets the lvl2 boolean accordingly
@@ -356,8 +356,7 @@ def updated_check_num_pts(check_driver):
     time.sleep(3)  # Wait for the page to load
 
     rewards_fullpage = str(check_driver.page_source.encode('utf-8'))
-    rewards_body = check_driver.find_element_by_tag_name(
-        "body").text  # All of the text on the webpage
+    rewards_body = check_driver.find_element(By.TAG_NAME, "body").text  # All of the text on the webpage
 
     # In some instances, a join now button is displayed, it needs to be clicked
     if ("When you join Microsoft Rewards" in rewards_body):
