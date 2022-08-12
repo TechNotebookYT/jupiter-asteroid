@@ -2,7 +2,7 @@
 # https://github.com/blackluv/Microsoft-Rewards-Bot/blob/master/ms_rewards.py
 # ^ Implement line #670
 # TODO - Add comments/add more to json
-import datetime
+import arrow # TIme library
 import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -494,9 +494,10 @@ def mobilePts(headless, ptsRemaining, userpass):
 
 
 def main():
-    # Datetime outputs for program logs
-    print(datetime.date.today().strftime("%B %d, %Y"))
-    print(datetime.datetime.now().strftime("%H:%M:%S"))
+    # Gets time & prints using arrow time library
+    time = arrow.now(
+        'US/Central').format("(MMM D, YYYY) (h:mm:ssA)")
+    print(time)
 
     for i in range(2): #Runs 2 passes on accts
         for i in range(len(logins)):
