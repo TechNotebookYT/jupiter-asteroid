@@ -6,6 +6,9 @@ import datetime
 import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.by import By
 import random
 import time
 import argparse
@@ -13,12 +16,20 @@ import os
 from country_list import countries_for_language
 import json
 
+# # WINDOWS ONLY - DISPLAY NOTIFICATION FOR TASK SCHEDULER
+# from win10toast import ToastNotifier
+# toast = ToastNotifier()
+# toast.show_toast("Microsoft Rewards Bot", "Point Farming Started",
+#                  duration=4, icon_path=r"C:\Users\prana\Documents\jupiter-asteroid-master\notification.ico")
+
 # Options
 headless_mode = True
 
 # RandomWords Specific
-r = list(requests.get(
-    "https://random-word-api.herokuapp.com/word?number=50").json())
+# r = list(requests.get(
+#     "https://random-word-api.herokuapp.com/word?number=50").json()) OLD
+r = str(requests.get(
+    'https://raw.githubusercontent.com/lorenbrichter/Words/master/Words/en.txt').content).split(r'\n')
 
 
 # Useragents to change browser
@@ -28,9 +39,6 @@ mobile_useragents = [
     "Mozilla/5.0 (Linux; Android 8.0.0; SM-G960F Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.84 Mobile Safari/537.36",
     "Mozilla/5.0 (Linux; Android 7.0; SM-G892A Build/NRD90M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/60.0.3112.107 Mobile Safari/537.36",
 ]
-
-# File path for the chromedriver
-chrome_path = r'/usr/local/bin/chromedriver'
 
 # Vars
 logins = []
@@ -93,7 +101,8 @@ def create_driver(mobile, headless):
         opts.add_experimental_option(
             'excludeSwitches', ['enable-logging'])  # Turns off verbose logging
     # Creates webdriver with options and returns it
-    return webdriver.Chrome(chrome_path, options=opts)
+    driver = webdriver.Chrome(service=Service(
+        ChromeDriverManager().install()), options=opts)
 
 
 # Logs in the User using the microsoft dialog
@@ -108,14 +117,14 @@ def login(driver_login, acct):
         time.sleep(3)  # Wait for page to load
 
         if (len(driver_login.find_elements_by_name('loginfmt')) > 0):
-            driver_login.find_element_by_name('loginfmt').send_keys(user)
+            driver_login.find_element(By.NAME, 'loginfmt').send_keys(user)
             time.sleep(1)  # Delay Between Send Keys and Click
-            driver_login.find_element_by_xpath(
+            driver_login.find_element(By.XPATH, 
                 '//*[@id="idSIButton9"]').click()  # next button
             time.sleep(2)  # Delay for password screen
             driver_login.find_element_by_name('passwd').send_keys(passwd)
             time.sleep(1)  # Delay Between Send Keys and Click
-            driver_login.find_element_by_xpath(
+            driver_login.find_element(By.XPATH, 
                 '//*[@id="idSIButton9"]').click()  # sign in button
             time.sleep(3)
 
@@ -149,16 +158,16 @@ def login_check(check_driver):
             bg_acct_check = True
         else:
             signin_tries += 1
-            if len(check_driver.find_elements_by_xpath('//*[@id="id_a"]')) > 0:
-                check_driver.find_element_by_xpath('//*[@id="id_a"]').click()
-            elif len(check_driver.find_elements_by_xpath(element_data['mobile_bing_hamburger'])) > 0:
-                check_driver.find_element_by_xpath(element_data['mobile_bing_hamburger']).click()
+            if len(check_driver.find_elements(By.XPATH, '//*[@id="id_a"]')) > 0:
+                check_driver.find_element(By.XPATH, '//*[@id="id_a"]').click()
+            elif len(check_driver.find_elements(By.XPATH, element_data['mobile_bing_hamburger'])) > 0:
+                check_driver.find_element(By.XPATH, element_data['mobile_bing_hamburger']).click()
                 time.sleep(2)
-                if (len(check_driver.find_elements_by_xpath(element_data['mobile_post_ham_pfp_xpath']))) > 0:
-                    check_driver.find_element_by_xpath(
+                if (len(check_driver.find_elements(By.XPATH, element_data['mobile_post_ham_pfp_xpath']))) > 0:
+                    check_driver.find_element(By.XPATH, 
                         element_data['mobile_post_ham_pfp_xpath']).click()
                     time.sleep(2)
-                    input()
+                    # input()
                     bg_acct_check = True
                     print('hamburger checked')
             time.sleep(1)
@@ -191,30 +200,30 @@ def login_check_v2(check_driver):
     while (signin_tries < 3) and (not check_name_on_page(search_engine_fullpage)):
         signin_tries += 1
         if not mobile:
-            if len(check_driver.find_elements_by_xpath('//*[@id="id_a"]')) > 0:
-                check_driver.find_element_by_xpath('//*[@id="id_a"]').click()
+            if len(check_driver.find_elements(By.XPATH, '//*[@id="id_a"]')) > 0:
+                check_driver.find_element(By.XPATH, '//*[@id="id_a"]').click()
                
         else:
             try:
                 time.sleep(1)
-                check_driver.find_element_by_id('mHamburger').click()
+                check_driver.find_element(By.ID, 'mHamburger').click()
             except:
                 try:
-                    check_driver.find_element_by_id('bnp_btn_accept').click()
+                    check_driver.find_element(By.ID, 'bnp_btn_accept').click()
                 except:
                     pass
                 try:
-                    check_driver.find_element_by_id('bnp_ttc_close').click()
+                    check_driver.find_element(By.ID, 'bnp_ttc_close').click()
                 except:
                     pass
                 time.sleep(1)
                 try:
-                    check_driver.find_element_by_id('mHamburger').click()
+                    check_driver.find_element(By.ID, 'mHamburger').click()
                 except:
                     pass
             try:
                 time.sleep(1)
-                check_driver.find_element_by_id('HBSignIn').click()
+                check_driver.find_element(By.ID, 'HBSignIn').click()
             except:
                 pass
         
@@ -228,7 +237,7 @@ def element_on_page(elements_key, element_check_driver):
     ----
     Returns whether the xpath is present on the page
     """
-    if (len(element_check_driver.find_elements_by_xpath(element_data[elements_key]))) > 0:
+    if (len(element_check_driver.find_elements(By.XPATH, element_data[elements_key]))) > 0:
         return True
     return False
 
@@ -252,7 +261,7 @@ def DEPRECATED_check_num_pts(check_driver):
 
     check_driver.get('https://account.microsoft.com/')
     time.sleep(3)
-    rewards_btn = check_driver.find_element_by_xpath(
+    rewards_btn = check_driver.find_element(By.XPATH, 
         r'//*[@id="navs"]/div/div/div/div/div[4]/a')
     rewards_btn.click()
     time.sleep(3)
@@ -277,27 +286,27 @@ def DEPRECATED_check_num_pts(check_driver):
 
     if lvl2:
         # PC Pts
-        pc_search_pts = check_driver.find_element_by_xpath(
+        pc_search_pts = check_driver.find_element(By.XPATH, 
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[1]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]/b').text
-        max_pcsearch = check_driver.find_element_by_xpath(
+        max_pcsearch = check_driver.find_element(By.XPATH, 
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[1]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]').text
 
         max_pcsearch = (max_pcsearch[int(max_pcsearch.index('/'))+2:])
         pcsearch_complete = (int(pc_search_pts) == int(max_pcsearch))
 
         # Edge Pts
-        edge_search_pts = check_driver.find_element_by_xpath(
+        edge_search_pts = check_driver.find_element(By.XPATH, 
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[3]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]/b').text
-        max_edgesearch = check_driver.find_element_by_xpath(
+        max_edgesearch = check_driver.find_element(By.XPATH, 
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[3]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]').text
 
         max_edgesearch = (max_edgesearch[int(max_edgesearch.index('/'))+2:])
         edgesearch_complete = (int(edge_search_pts) == int(max_edgesearch))
 
         # Mobile Pts
-        mobile_search_pts = check_driver.find_element_by_xpath(
+        mobile_search_pts = check_driver.find_element(By.XPATH, 
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[2]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]/b').text
-        max_mobilesearch = check_driver.find_element_by_xpath(
+        max_mobilesearch = check_driver.find_element(By.XPATH, 
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[2]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]').text
 
         max_mobilesearch = (
@@ -314,18 +323,18 @@ def DEPRECATED_check_num_pts(check_driver):
             max_mobilesearch), int(max_edgesearch)])
     else:
         # PC Pts
-        pc_search_pts = check_driver.find_element_by_xpath(
+        pc_search_pts = check_driver.find_element(By.XPATH, 
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[1]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]/b').text
-        max_pcsearch = check_driver.find_element_by_xpath(
+        max_pcsearch = check_driver.find_element(By.XPATH, 
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[1]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]').text
 
         max_pcsearch = (max_pcsearch[int(max_pcsearch.index('/'))+2:])
         pcsearch_complete = (pc_search_pts == max_pcsearch)
 
         # Edge Pts
-        edge_search_pts = check_driver.find_element_by_xpath(
+        edge_search_pts = check_driver.find_element(By.XPATH, 
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[2]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]/b').text
-        max_edgesearch = check_driver.find_element_by_xpath(
+        max_edgesearch = check_driver.find_element(By.XPATH, 
             '//*[@id="userPointsBreakdown"]/div/div[2]/div/div[2]/div/div[2]/mee-rewards-user-points-details/div/div/div/div/p[2]').text
 
         max_edgesearch = (max_edgesearch[int(max_edgesearch.index('/'))+2:])
@@ -353,31 +362,33 @@ def updated_check_num_pts(check_driver):
     # In some instances, a join now button is displayed, it needs to be clicked
     if ("When you join Microsoft Rewards" in rewards_body):
         print("join btn detected")
-        check_driver.find_element_by_xpath(
+        check_driver.find_element(By.XPATH, 
             element_data['join_now_btn_xpath']).click()
         # ↓ Done since the join now button takes you to bing.com and not to points pg
         check_driver.get(url_data["points_url"])
 
+    check_driver.get(url_data["points_url"])
+    # input()
     # Checking level2/level1
-    lvlcheck = check_driver.find_elements_by_xpath(element_data["mobile_search_full_xpath"])
+    lvlcheck = check_driver.find_elements(By.XPATH, element_data["mobile_search_full_xpath"])
     lvl2 = len(lvlcheck) > 0
 
     if lvl2:
         print("level2")
         # Gets number of points remaining for each category
-        pc_search_pts_remaining = check_driver.find_element_by_xpath(
+        pc_search_pts_remaining = check_driver.find_element(By.XPATH, 
             element_data['pc_search_pts_lvl2_xpath']).text
         slash_index = pc_search_pts_remaining.index("/")
         pc_search_pts_remaining = int(
             pc_search_pts_remaining[slash_index+1:]) - int(pc_search_pts_remaining[:slash_index])
 
-        edge_search_pts_remaining = check_driver.find_element_by_xpath(
+        edge_search_pts_remaining = check_driver.find_element(By.XPATH, 
             element_data['edge_search_pts_lvl2_xpath']).text
         slash_index = edge_search_pts_remaining.index("/")
         edge_search_pts_remaining = int(
             edge_search_pts_remaining[slash_index+1:]) - int(edge_search_pts_remaining[:slash_index])
 
-        mobile_search_pts_remaining = check_driver.find_element_by_xpath(
+        mobile_search_pts_remaining = check_driver.find_element(By.XPATH, 
             element_data['mobile_search_pts_lvl2_xpath']).text
         slash_index = mobile_search_pts_remaining.index("/")
         mobile_search_pts_remaining = int(
@@ -389,14 +400,14 @@ def updated_check_num_pts(check_driver):
     else:
         print("lvl1")
         # Gets number of points remaining for each category
-        pc_search_pts_remaining = check_driver.find_element_by_xpath(
+        pc_search_pts_remaining = check_driver.find_element(By.XPATH, 
             element_data['pc_search_pts_lvl1_xpath']).text
         print(pc_search_pts_remaining)
         slash_index = pc_search_pts_remaining.index("/")
         pc_search_pts_remaining = int(
             pc_search_pts_remaining[slash_index+1:]) - int(pc_search_pts_remaining[11:slash_index])
 
-        edge_search_pts_remaining = check_driver.find_element_by_xpath(
+        edge_search_pts_remaining = check_driver.find_element(By.XPATH, 
             element_data['edge_search_pts_lvl1_xpath']).text
         slash_index = edge_search_pts_remaining.index("/")
         edge_search_pts_remaining = int(
@@ -451,9 +462,18 @@ def random_searches(driver_search, num):
         country = countries[random.randint(0, 248)][1]
         return (country + " " + random.choice(country_attributes))
 
+    def randomStockStats():
+        stocks = requests.get(url_data['companies_list']).text.split("\n")
+
+        stock_attributes = ['market cap', 'index', 'headquarters', 'stock price', 'share price', 'shares', 'description', 'name', 's&p', 's&p 500', 'china', 'russia', 'ukraine', 'US', 'privacy', 'data collection', 'products', 'jobs', 'software', 'hardware', 'pe ratio', 'dividentds']
+
+        
+        stock = stocks[random.randint(0, 500)]
+        return (stock + " " + random.choice(stock_attributes))
+
     for i in range(int(num)):
         stringtosearch = random.choice(
-            [coordinate_generator(), numbergen(), randomWordDefinition(), randomCountryStats()]) # Each function returns a unique search that
+            [coordinate_generator(), numbergen(), randomWordDefinition(), randomCountryStats(), randomStockStats()]) # Each function returns a unique search that
         driver_search.get(f'https://www.bing.com/search?q={stringtosearch}') # Loads search
         print(str(int((i+1)/num*100))+"%") # Prints percentage of searches completed on attempt
         time.sleep(random.randint(1, 7)) # Time between searches
@@ -463,8 +483,8 @@ def complete_challenge_1(driver_challenge):
     driver_challenge.get(url_data['points_url'])
     time.sleep(2.35)
     # CHecks if challenge element is there, if so, it clicks the challenge
-    if len(driver_challenge.find_elements_by_xpath(element_data['daily_challenge_1'])) > 0:
-        driver_challenge.find_element_by_xpath(element_data['daily_challenge_1']).click()
+    if len(driver_challenge.find_elements(By.XPATH, element_data['daily_challenge_1'])) > 0:
+        driver_challenge.find_element(By.XPATH, element_data['daily_challenge_1']).click()
 
 
 def mobilePts(headless, ptsRemaining, userpass):
