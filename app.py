@@ -1,7 +1,3 @@
-# USE THIS FOR PTS: https://www.bing.com/rewardsapp/bepflyoutpage?style=chromeextension
-# https://github.com/blackluv/Microsoft-Rewards-Bot/blob/master/ms_rewards.py
-# ^ Implement line #670
-# TODO - Add comments/add more to json
 import arrow # TIme library
 import requests
 from selenium import webdriver
@@ -15,12 +11,6 @@ import argparse
 import os
 from country_list import countries_for_language
 import json
-
-# # WINDOWS ONLY - DISPLAY NOTIFICATION FOR TASK SCHEDULER
-# from win10toast import ToastNotifier
-# toast = ToastNotifier()
-# toast.show_toast("Microsoft Rewards Bot", "Point Farming Started",
-#                  duration=4, icon_path=r"C:\Users\prana\Documents\jupiter-asteroid-master\notification.ico")
 
 # Options
 headless_mode = True
@@ -499,7 +489,9 @@ def main():
         'US/Central').format("(MMM D, YYYY) (h:mm:ssA)")
     print(time)
 
-    for i in range(2): #Runs 2 passes on accts
+    all_acct_pts = [[False, False, False] for i in range(len(logins))]  #used to determine whether to run again or terminate
+
+    for i in range(2): #Runs MAX 2 passes on accts
         for i in range(len(logins)):
             driver = create_driver(False, headless_mode)  # Creates the desktop driver
             login(driver, logins[i])  # Logs in on desktop driver
@@ -509,7 +501,7 @@ def main():
 
             pc_complete = (pts[0] == 0)
             edge_complete = (pts[1] == 0)
-            
+
             # Complete Daily Challenge
             complete_challenge_1(driver)
 
@@ -538,5 +530,20 @@ def main():
                     print(pts)
                     tries += 1
                 driver.quit()
+            
+            if len(pts) == 3:            
+                all_acct_pts[i] = [pc_complete, edge_complete, mobile_complete]
+            else:
+                all_acct_pts[i] = [pc_complete, edge_complete, True]
+            
+            exitstatus = True # Will terminate if true
+            for ptsacct in all_acct_pts:
+                for attr in ptsacct:
+                    if not attr:
+                        exitstatus = False
+
+            if exitstatus:
+                print("All targets reached... Exiting")
+                exit()
 
 main()
