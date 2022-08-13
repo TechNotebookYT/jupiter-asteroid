@@ -73,7 +73,11 @@ with open(f'{current_path}/urls.json') as jfile:
 
 # Takes in the platform and whether or not it will be headless to create a webdriver
 def create_driver(mobile, headless):
-    print('Mobile: ', mobile, 'headless: ', headless) ## Debug Code
+    if mobile:
+        print('Mobile Browser')
+    else:
+        print("Desktop Browser")
+        
     # Selects the Correct User Agent
     if mobile:
         # Picks from 2 different useragents
