@@ -416,5 +416,6 @@ try:
     main()
 except:
     from plyer import notification
-    notification.notify(title="ERROR", message="Jupiter-Asteroid: Check Logs")
+    notification.notify(title="ERROR", message="Jupiter-Asteroid: Check Logs",
+                        app_icon=os.path.join(current_path, "notification.ico"))
     # WARNING: LOGS NOT IMPLEMENTED YET
