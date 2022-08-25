@@ -101,7 +101,10 @@ def login(driver_login, acct):
 
     user, passwd = acct  # Sets Username and Password values from acct list
 
-    while not logged_in:
+    login_attempts = 0
+
+    while not logged_in and login_attempts < 5:
+        login_attempts += 1
         print("Attempting Login...   ", user)
         driver_login.get('https://login.live.com/')
         time.sleep(3)  # Wait for page to load
@@ -122,7 +125,10 @@ def login(driver_login, acct):
         # print("Logged In: ", logged_in) ## Debug Code
         # print("User: ", user) ## Debug Code
         # print("Pass: ", passwd) ## Debug Code
-    print("Login Successful: ", user)  # Prints Email to the Screen
+    if logged_in:
+        print("Login Successful: ", user)  # Prints Email to the Screen
+    else:
+        return Exception("Login Failed")
 
 
 def login_check(check_driver):
@@ -414,7 +420,8 @@ def main():
 
 try:
     main()
-except:
+except Exception as e:
+    print(e)
     from plyer import notification
     notification.notify(title="ERROR", message="Jupiter-Asteroid: Check Logs",
                         app_icon=os.path.join(current_path, "notification.ico"))
