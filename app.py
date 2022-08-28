@@ -366,7 +366,7 @@ def main():
             driver = create_driver(False, headless_mode)  # Creates the desktop driver
             login(driver, logins[i])  # Logs in on desktop driver
             # Checks the number of points and adds it to pts list
-            pts = check_num_pts(driver)
+            pts = check_num_pts(driver) 
             print("Remaining Pts: [desktop, edge, mobile]: ", pts)  # Prints out the pts list
 
             pc_complete = (pts[0] == 0)
@@ -424,5 +424,8 @@ except Exception as e:
     print(e)
     from plyer import notification
     notification.notify(title="ERROR", message="Jupiter-Asteroid: Check Logs",
+                        app_icon=os.path.join(current_path, "notification.ico"))
+    time.sleep(3)
+    notification.notify(title="ERROR", message=str(e),
                         app_icon=os.path.join(current_path, "notification.ico"))
     # WARNING: LOGS NOT IMPLEMENTED YET
