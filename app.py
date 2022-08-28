@@ -1,4 +1,4 @@
-import arrow # Time library
+import arrow  # Time library
 import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -39,7 +39,7 @@ args = parser.parse_args()
 firstName = args.first_name
 lastName = args.last_name
 
-if args.debug: # Checks if debug mode turned on
+if args.debug:  # Checks if debug mode turned on
     headless_mode = False
 else:
     headless_mode = True
@@ -67,12 +67,14 @@ with open(f'{current_path}/urls.json') as jfile:
 r = str(requests.get(
     'https://raw.githubusercontent.com/lorenbrichter/Words/master/Words/en.txt').content).split(r'\n')
 # Takes uses platform & headless status to create webdriver
+
+
 def create_driver(mobile, headless):
     if mobile:
         print('Mobile Browser')
     else:
         print("Desktop Browser")
-        
+
     # Selects the Correct User Agent
     if mobile:
         # Picks from many different useragents
@@ -89,7 +91,7 @@ def create_driver(mobile, headless):
         opts.add_argument('--headless')  # Turns on headless mode
         opts.add_experimental_option(
             'excludeSwitches', ['enable-logging'])  # Turns off verbose logging
-    
+
     # Creates webdriver with options and returns it
     return webdriver.Chrome(service=Service(
         ChromeDriverManager().install()), options=opts)
@@ -109,16 +111,16 @@ def login(driver_login, acct):
         driver_login.get('https://login.live.com/')
         time.sleep(3)  # Wait for page to load
 
-        if (len(driver_login.find_elements(By.NAME,'loginfmt')) > 0):
+        if (len(driver_login.find_elements(By.NAME, 'loginfmt')) > 0):
             driver_login.find_element(By.NAME, 'loginfmt').send_keys(user)
             time.sleep(1)  # Delay Between Send Keys and Click
-            driver_login.find_element(By.XPATH, 
-                '//*[@id="idSIButton9"]').click()  # next button
+            driver_login.find_element(By.XPATH,
+                                      '//*[@id="idSIButton9"]').click()  # next button
             time.sleep(2)  # Delay for password screen
             driver_login.find_element(By.NAME, 'passwd').send_keys(passwd)
             time.sleep(1)  # Delay Between Send Keys and Click
-            driver_login.find_element(By.XPATH, 
-                '//*[@id="idSIButton9"]').click()  # sign in button
+            driver_login.find_element(By.XPATH,
+                                      '//*[@id="idSIButton9"]').click()  # sign in button
             time.sleep(3)
 
         logged_in = login_check(driver_login)
@@ -142,14 +144,15 @@ def login_check(check_driver):
         return False
 
     # ---- Sign In Button ----
-    
+
     # Make generic search
     check_driver.get(url_data['time_search'])
     # Source code of full webpage
     search_engine_fullpage = str(check_driver.page_source.encode('utf-8'))
 
-    # Checks if using mobile or desktop useragent 
-    mobile = check_driver.execute_script("return navigator.userAgent") in mobile_useragents
+    # Checks if using mobile or desktop useragent
+    mobile = check_driver.execute_script(
+        "return navigator.userAgent") in mobile_useragents
 
     signin_tries = 0
     while (signin_tries < 3) and (not check_name_on_page(search_engine_fullpage)):
@@ -157,7 +160,7 @@ def login_check(check_driver):
         if not mobile:
             if len(check_driver.find_elements(By.XPATH, '//*[@id="id_a"]')) > 0:
                 check_driver.find_element(By.XPATH, '//*[@id="id_a"]').click()
-               
+
         else:
             try:
                 time.sleep(1)
@@ -181,10 +184,11 @@ def login_check(check_driver):
                 check_driver.find_element(By.ID, 'HBSignIn').click()
             except:
                 pass
-        
+
         # Source code of full webpage
-        search_engine_fullpage = str(check_driver.page_source.encode('utf-8'))    
+        search_engine_fullpage = str(check_driver.page_source.encode('utf-8'))
     return check_name_on_page(search_engine_fullpage)
+
 
 def element_on_page(elements_key, element_check_driver):
     """
@@ -196,13 +200,14 @@ def element_on_page(elements_key, element_check_driver):
         return True
     return False
 
+
 def check_name_on_page(sourceCode):
     """
     Check Name On Page
     --
     Checks if the name is present in the sourcecode of the page
     """
-    
+
     if ((firstName in sourceCode) or (lastName in sourceCode)):
         return True
     return False
@@ -216,39 +221,41 @@ def check_num_pts(check_driver):
     time.sleep(3)  # Wait for the page to load
 
     rewards_fullpage = str(check_driver.page_source.encode('utf-8'))
-    rewards_body = check_driver.find_element(By.TAG_NAME, "body").text  # All of the text on the webpage
+    rewards_body = check_driver.find_element(
+        By.TAG_NAME, "body").text  # All of the text on the webpage
 
     # In some instances, a join now button is displayed, it needs to be clicked
     if ("When you join Microsoft Rewards" in rewards_body):
         print("join btn detected")
-        check_driver.find_element(By.XPATH, 
-            element_data['join_now_btn_xpath']).click()
+        check_driver.find_element(By.XPATH,
+                                  element_data['join_now_btn_xpath']).click()
         # ↓ Done since the join now button takes you to bing.com and not to points pg
         check_driver.get(url_data["points_url"])
 
     check_driver.get(url_data["points_url"])
     # input()
     # Checking level2/level1
-    lvlcheck = check_driver.find_elements(By.XPATH, element_data["mobile_search_full_xpath"])
+    lvlcheck = check_driver.find_elements(
+        By.XPATH, element_data["mobile_search_full_xpath"])
     lvl2 = len(lvlcheck) > 0
 
     if lvl2:
         print("level2")
         # Gets number of points remaining for each category
-        pc_search_pts_remaining = check_driver.find_element(By.XPATH, 
-            element_data['pc_search_pts_lvl2_xpath']).text
+        pc_search_pts_remaining = check_driver.find_element(By.XPATH,
+                                                            element_data['pc_search_pts_lvl2_xpath']).text
         slash_index = pc_search_pts_remaining.index("/")
         pc_search_pts_remaining = int(
             pc_search_pts_remaining[slash_index+1:]) - int(pc_search_pts_remaining[:slash_index])
 
-        edge_search_pts_remaining = check_driver.find_element(By.XPATH, 
-            element_data['edge_search_pts_lvl2_xpath']).text
+        edge_search_pts_remaining = check_driver.find_element(By.XPATH,
+                                                              element_data['edge_search_pts_lvl2_xpath']).text
         slash_index = edge_search_pts_remaining.index("/")
         edge_search_pts_remaining = int(
             edge_search_pts_remaining[slash_index+1:]) - int(edge_search_pts_remaining[:slash_index])
 
-        mobile_search_pts_remaining = check_driver.find_element(By.XPATH, 
-            element_data['mobile_search_pts_lvl2_xpath']).text
+        mobile_search_pts_remaining = check_driver.find_element(By.XPATH,
+                                                                element_data['mobile_search_pts_lvl2_xpath']).text
         slash_index = mobile_search_pts_remaining.index("/")
         mobile_search_pts_remaining = int(
             mobile_search_pts_remaining[slash_index+1:]) - int(mobile_search_pts_remaining[:slash_index])
@@ -259,15 +266,15 @@ def check_num_pts(check_driver):
     else:
         print("lvl1")
         # Gets number of points remaining for each category
-        pc_search_pts_remaining = check_driver.find_element(By.XPATH, 
-            element_data['pc_search_pts_lvl1_xpath']).text
+        pc_search_pts_remaining = check_driver.find_element(By.XPATH,
+                                                            element_data['pc_search_pts_lvl1_xpath']).text
         print(pc_search_pts_remaining)
         slash_index = pc_search_pts_remaining.index("/")
         pc_search_pts_remaining = int(
             pc_search_pts_remaining[slash_index+1:]) - int(pc_search_pts_remaining[11:slash_index])
 
-        edge_search_pts_remaining = check_driver.find_element(By.XPATH, 
-            element_data['edge_search_pts_lvl1_xpath']).text
+        edge_search_pts_remaining = check_driver.find_element(By.XPATH,
+                                                              element_data['edge_search_pts_lvl1_xpath']).text
         slash_index = edge_search_pts_remaining.index("/")
         edge_search_pts_remaining = int(
             edge_search_pts_remaining[slash_index+1:]) - int(edge_search_pts_remaining[11:slash_index])
@@ -276,6 +283,7 @@ def check_num_pts(check_driver):
         points.append(edge_search_pts_remaining)
 
     return points
+
 
 def random_searches(driver_search, num):
     """
@@ -306,16 +314,18 @@ def random_searches(driver_search, num):
         num2 = random.randint(1, 9999)
         num2_dec = random.randint(1, 99)
         return f"{num1}.{num1_dec}{random.choice(['*', '-', '^'])}{num2}.{num2_dec}"
-    
+
     def randomWordDefinition():
         # Example search: exemptions define5
         random_word_search = str(random.choice(r))
-        random_word_search += random.choice([" def", " defin", " defition", " definition", " drfine", " meanin"])
+        random_word_search += random.choice(
+            [" def", " defin", " defition", " definition", " drfine", " meanin"])
 
         return random_word_search
 
     def randomCountryStats():
-        country_attributes = ['metric or imperial', 'in NATO', 'gdp', 'capital', 'population', 'average income', 'language', 'map', 'continent', 'largest city', 'COVID', 'coronavirus', 'population density', 'news', 'president', 'internet', 'size']
+        country_attributes = ['metric or imperial', 'in NATO', 'gdp', 'capital', 'population', 'average income', 'language', 'map',
+                              'continent', 'largest city', 'COVID', 'coronavirus', 'population density', 'news', 'president', 'internet', 'size']
 
         countries = list(countries_for_language('en'))
         country = countries[random.randint(0, 248)][1]
@@ -324,18 +334,21 @@ def random_searches(driver_search, num):
     def randomStockStats():
         stocks = requests.get(url_data['companies_list']).text.split("\n")
 
-        stock_attributes = ['market cap', 'index', 'headquarters', 'stock price', 'share price', 'shares', 'description', 'name', 's&p', 's&p 500', 'china', 'russia', 'ukraine', 'US', 'privacy', 'data collection', 'products', 'jobs', 'software', 'hardware', 'pe ratio', 'dividentds']
+        stock_attributes = ['market cap', 'index', 'headquarters', 'stock price', 'share price', 'shares', 'description', 'name', 's&p', 's&p 500',
+                            'china', 'russia', 'ukraine', 'US', 'privacy', 'data collection', 'products', 'jobs', 'software', 'hardware', 'pe ratio', 'dividentds']
 
-        
         stock = stocks[random.randint(0, 500)]
         return (stock + " " + random.choice(stock_attributes))
 
     for i in range(int(num)):
         stringtosearch = random.choice(
-            [coordinate_generator(), numbergen(), randomWordDefinition(), randomCountryStats(), randomStockStats()]) # Each function returns a unique search that
-        driver_search.get(f'https://www.bing.com/search?q={stringtosearch}') # Loads search
-        print(str(int((i+1)/num*100))+"%") # Prints percentage of searches completed on attempt
-        time.sleep(random.randint(1, 7)) # Time between searches
+            [coordinate_generator(), numbergen(), randomWordDefinition(), randomCountryStats(), randomStockStats()])  # Each function returns a unique search that
+        driver_search.get(
+            f'https://www.bing.com/search?q={stringtosearch}')  # Loads search
+        # Prints percentage of searches completed on attempt
+        print(str(int((i+1)/num*100))+"%")
+        time.sleep(random.randint(1, 7))  # Time between searches
+
 
 def complete_challenge_1(driver_challenge):
     # Completes the 1st challenge (10 pts)
@@ -343,7 +356,8 @@ def complete_challenge_1(driver_challenge):
     time.sleep(2.35)
     # CHecks if challenge element is there, if so, it clicks the challenge
     if len(driver_challenge.find_elements(By.XPATH, element_data['daily_challenge_1'])) > 0:
-        driver_challenge.find_element(By.XPATH, element_data['daily_challenge_1']).click()
+        driver_challenge.find_element(
+            By.XPATH, element_data['daily_challenge_1']).click()
 
 
 def mobilePts(headless, ptsRemaining, userpass):
@@ -359,15 +373,18 @@ def main():
         'US/Central').format("(MMM D, YYYY) (h:mm:ssA)")
     print(time)
 
-    all_acct_pts = [[False, False, False] for i in range(len(logins))]  #used to determine whether to run again or terminate
+    # used to determine whether to run again or terminate
+    all_acct_pts = [[False, False, False] for i in range(len(logins))]
 
-    for i in range(2): #Runs MAX 2 passes on accts
+    for i in range(2):  # Runs MAX 2 passes on accts
         for i in range(len(logins)):
-            driver = create_driver(False, headless_mode)  # Creates the desktop driver
+            # Creates the desktop driver
+            driver = create_driver(False, headless_mode)
             login(driver, logins[i])  # Logs in on desktop driver
             # Checks the number of points and adds it to pts list
-            pts = check_num_pts(driver) 
-            print("Remaining Pts: [desktop, edge, mobile]: ", pts)  # Prints out the pts list
+            pts = check_num_pts(driver)
+            # Prints out the pts list
+            print("Remaining Pts: [desktop, edge, mobile]: ", pts)
 
             pc_complete = (pts[0] == 0)
             edge_complete = (pts[1] == 0)
@@ -379,22 +396,22 @@ def main():
                 # Lvl 2 Account Code
                 mobile_complete = (pts[2] == 0)
                 tries = 0
-                while (not(pc_complete and edge_complete and mobile_complete)) and (tries < 3):
+                while (not (pc_complete and edge_complete and mobile_complete)) and (tries < 3):
                     pc_complete = (pts[0] == 0)
                     edge_complete = (pts[1] == 0)
                     mobile_complete = (pts[2] == 0)
-                    if not(pc_complete and edge_complete):
+                    if not (pc_complete and edge_complete):
                         random_searches(driver, ((pts[0]+pts[1])/5)+1)
                     if not mobile_complete:
                         mobilePts(headless_mode, (pts[2]/5)+1, logins[i])
-                    pts= check_num_pts(driver)
+                    pts = check_num_pts(driver)
                     print("Remaining Pts: [desktop, edge, mobile]: ", pts)
-                    tries+=1
+                    tries += 1
                 driver.quit()
             else:
                 # Lvl 1 Acct code
                 tries = 0
-                while (not(pc_complete and edge_complete)) and (tries < 3):
+                while (not (pc_complete and edge_complete)) and (tries < 3):
                     pc_complete = (pts[0] == 0)
                     edge_complete = (pts[1] == 0)
                     random_searches(driver, ((pts[0]+pts[1])/5)+1)
@@ -402,13 +419,13 @@ def main():
                     print("Remaining Pts: [desktop, edge, mobile]: ", pts)
                     tries += 1
                 driver.quit()
-            
-            if len(pts) == 3:            
+
+            if len(pts) == 3:
                 all_acct_pts[i] = [pc_complete, edge_complete, mobile_complete]
             else:
                 all_acct_pts[i] = [pc_complete, edge_complete, True]
-            
-            exitstatus = True # Will terminate if true
+
+            exitstatus = True  # Will terminate if true
             for ptsacct in all_acct_pts:
                 for attr in ptsacct:
                     if not attr:
@@ -417,6 +434,7 @@ def main():
             if exitstatus:
                 print("All targets reached... Exiting")
                 exit()
+
 
 try:
     main()
