@@ -444,6 +444,6 @@ except Exception as e:
     notification.notify(title="ERROR", message="Jupiter-Asteroid: Check Logs",
                         app_icon=os.path.join(current_path, "notification.ico"))
     time.sleep(3)
-    notification.notify(title="ERROR", message=str(e),
+    notification.notify(title="ERROR", message=str(e[0:254]),
                         app_icon=os.path.join(current_path, "notification.ico"))
     # WARNING: LOGS NOT IMPLEMENTED YET
