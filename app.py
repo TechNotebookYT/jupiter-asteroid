@@ -33,6 +33,8 @@ parser.add_argument("first_name")
 parser.add_argument("last_name")
 parser.add_argument("-d", "--debug", help="turn off headless",
                     action="store_true")
+parser.add_argument("-b", "--blind", help="disable point checks (use if pts check is buggy)",
+                    action="store_true")
 args = parser.parse_args()
 
 # Imports first and last name from argparse
@@ -43,6 +45,8 @@ if args.debug:  # Checks if debug mode turned on
     headless_mode = False
 else:
     headless_mode = True
+
+blindmode = args.blind
 
 # You Need a file called userpass.txt with the usernames and passwords on different lines
 # !!!!!! Make sure you have a newline on the last line of your userpass.txt file
@@ -213,7 +217,7 @@ def check_name_on_page(sourceCode):
     return False
 
 
-def check_num_pts(check_driver):
+def check_num_pts(check_driver, blind):
     points = []
 
     check_driver.get(url_data["points_url"])
@@ -263,6 +267,9 @@ def check_num_pts(check_driver):
         points.append(pc_search_pts_remaining)
         points.append(edge_search_pts_remaining)
         points.append(mobile_search_pts_remaining)
+        
+        if blind:
+            points = [0, 0, 0]
     else:
         print("lvl1")
         # Gets number of points remaining for each category
@@ -281,6 +288,8 @@ def check_num_pts(check_driver):
 
         points.append(pc_search_pts_remaining)
         points.append(edge_search_pts_remaining)
+        if blind:
+            points = [0, 0]
 
     return points
 
@@ -382,7 +391,7 @@ def main():
             driver = create_driver(False, headless_mode)
             login(driver, logins[i])  # Logs in on desktop driver
             # Checks the number of points and adds it to pts list
-            pts = check_num_pts(driver)
+            pts = check_num_pts(driver, blindmode)
             # Prints out the pts list
             print("Remaining Pts: [desktop, edge, mobile]: ", pts)
 
@@ -404,7 +413,7 @@ def main():
                         random_searches(driver, ((pts[0]+pts[1])/5)+1)
                     if not mobile_complete:
                         mobilePts(headless_mode, (pts[2]/5)+1, logins[i])
-                    pts = check_num_pts(driver)
+                    pts = check_num_pts(driver, blindmode)
                     print("Remaining Pts: [desktop, edge, mobile]: ", pts)
                     tries += 1
                 driver.quit()
@@ -415,7 +424,7 @@ def main():
                     pc_complete = (pts[0] == 0)
                     edge_complete = (pts[1] == 0)
                     random_searches(driver, ((pts[0]+pts[1])/5)+1)
-                    pts = check_num_pts(driver)
+                    pts = check_num_pts(driver, blindmode)
                     print("Remaining Pts: [desktop, edge, mobile]: ", pts)
                     tries += 1
                 driver.quit()
