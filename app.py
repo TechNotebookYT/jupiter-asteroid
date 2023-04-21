@@ -333,7 +333,7 @@ def random_searches(driver_search, num):
         return random_word_search
 
     def randomCountryStats():
-        country_attributes = ['relation with us', 'wars', 'ppp', 'gross domestic product', 'gdp per capita', 'gdp per person', 'imperial or metric', 'in NATO', 'gdp', 'capital', 'population', 'average income', 'language', 'map',
+        country_attributes = ['relation with us', 'wars', 'war', 'ppp', 'gross domestic product', 'gdp per capita', 'gdp per person', 'imperial or metric', 'in NATO', 'gdp', 'capital', 'population', 'average income', 'language', 'map',
                               'continent', 'largest city', 'COVID', 'coronavirus', 'population density', 'news', 'president', 'internet', 'size']
 
         countries = list(countries_for_language('en'))
