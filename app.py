@@ -314,7 +314,7 @@ def random_searches(driver_search, num):
         num2_posneg = random.choice(pos_neg)
 
         return (f'{num1_posneg}{num1}.{num1_dec}, {num2_posneg}{num2}.{num2_dec}' +
-                f" {random.choice(['coord', 'coordinate', 'map', 'zip code', 'zip', 'location'])}")
+                f" {random.choice(['coord', 'coordinate', 'map', 'zip code', 'zip', 'location', 'destination', 'country', 'continent', 'hemisphere', 'satellite', 'bing maps', 'google maps', 'state', 'city', 'county'])}")
 
     # Creates random equations
     def numbergen():
@@ -322,18 +322,18 @@ def random_searches(driver_search, num):
         num1_dec = num1 = random.randint(1, 999)
         num2 = random.randint(1, 9999)
         num2_dec = random.randint(1, 99)
-        return f"{num1}.{num1_dec}{random.choice(['*', '-', '^'])}{num2}.{num2_dec}"
+        return f"{num1}.{num1_dec}{random.choice(['*', '-', '^', '÷'])}{num2}.{num2_dec}"
 
-    def randomWordDefinition():
+    def randomWordQueries():
         # Example search: exemptions define5
         random_word_search = str(random.choice(r))
         random_word_search += random.choice(
-            [" def", " defin", " defition", " definition", " drfine", " meanin"])
+            [" def", " defin", " defition", " definition", " drfine", " meanin", " definiton", 'meaning', ' synonyms', ' language of origin', ' in french', ' in german', ' in spanish', ' in hindi', ' in russian'])
 
         return random_word_search
 
     def randomCountryStats():
-        country_attributes = ['metric or imperial', 'in NATO', 'gdp', 'capital', 'population', 'average income', 'language', 'map',
+        country_attributes = ['relation with us', 'wars', 'ppp', 'gross domestic product', 'gdp per capita', 'gdp per person', 'imperial or metric', 'in NATO', 'gdp', 'capital', 'population', 'average income', 'language', 'map',
                               'continent', 'largest city', 'COVID', 'coronavirus', 'population density', 'news', 'president', 'internet', 'size']
 
         countries = list(countries_for_language('en'))
@@ -351,7 +351,8 @@ def random_searches(driver_search, num):
 
     for i in range(int(num)):
         stringtosearch = random.choice(
-            [coordinate_generator(), numbergen(), randomWordDefinition(), randomCountryStats(), randomStockStats()])  # Each function returns a unique search that
+            [coordinate_generator(), numbergen(), randomWordQueries(), randomCountryStats()])  # Each function returns a unique search that
+            # [coordinate_generator(), numbergen(), randomWordDefinition(), randomCountryStats(), randomStockStats()])  # Each function returns a unique search that
         driver_search.get(
             f'https://www.bing.com/search?q={stringtosearch}')  # Loads search
         # Prints percentage of searches completed on attempt
