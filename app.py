@@ -267,7 +267,7 @@ def check_num_pts(check_driver, blind):
         points.append(pc_search_pts_remaining)
         points.append(edge_search_pts_remaining)
         points.append(mobile_search_pts_remaining)
-        
+
         if blind:
             points = [0, 0, 0]
     else:
@@ -344,15 +344,15 @@ def random_searches(driver_search, num):
         stocks = requests.get(url_data['companies_list']).text.split("\n")
 
         stock_attributes = ['market cap', 'index', 'headquarters', 'stock price', 'share price', 'shares', 'description', 'name', 's&p', 's&p 500',
-                            'china', 'russia', 'ukraine', 'US', 'privacy', 'data collection', 'products', 'jobs', 'software', 'hardware', 'pe ratio', 'dividentds']
+                            'china', 'russia', 'ukraine', 'US', 'privacy', 'data collection', 'products', 'jobs', 'software', 'hardware', 'pe ratio', 'dividentds', 'p&e ratio', 'prices', 'options', 'exchanges']
 
-        stock = stocks[random.randint(0, 500)]
+        stock = stocks[random.randint(0, 5000)]
         return (stock + " " + random.choice(stock_attributes))
 
     for i in range(int(num)):
         stringtosearch = random.choice(
-            [coordinate_generator(), numbergen(), randomWordQueries(), randomCountryStats()])  # Each function returns a unique search that
-            # [coordinate_generator(), numbergen(), randomWordDefinition(), randomCountryStats(), randomStockStats()])  # Each function returns a unique search that
+            [coordinate_generator(), numbergen(), randomWordQueries(), randomCountryStats(), randomStockStats()])  # Each function returns a unique search that
+        # [coordinate_generator(), numbergen(), randomWordQueries(), randomCountryStats()])  # Each function returns a unique search that
         driver_search.get(
             f'https://www.bing.com/search?q={stringtosearch}')  # Loads search
         # Prints percentage of searches completed on attempt

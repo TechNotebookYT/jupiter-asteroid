@@ -1,6 +1,6 @@
 {
     "points_url": "https://www.bing.com/rewardsapp/bepflyoutpage?style=chromeextension",
-    "companies_list": "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/master/data/constituents_symbols.txt",
+    "companies_list": "https://raw.githubusercontent.com/rreichel3/US-Stock-Symbols/main/all/all_tickers.txt",
     "time_search": "https://www.bing.com/search?q=what+is+the+weather"
 
 }
