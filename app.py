@@ -3,7 +3,6 @@ import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 import random
 import time
@@ -96,10 +95,9 @@ def create_driver(mobile, headless):
         opts.add_experimental_option(
             'excludeSwitches', ['enable-logging'])  # Turns off verbose logging
 
-    # Creates webdriver with options and returns it
-    return webdriver.Chrome(service=Service(
-        ChromeDriverManager().install()), options=opts)
 
+    # Creates webdriver with options and returns it
+    return webdriver.Chrome(options=opts)
 
 # Logs in the User using the microsoft dialog
 def login(driver_login, acct):
